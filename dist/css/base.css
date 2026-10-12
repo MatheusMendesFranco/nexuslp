@@ -1,0 +1,144 @@
+/* Nexus — base: reset, navegação mínima, acessibilidade. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  background: var(--nx-void);
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: 88px;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  color: var(--nx-text);
+  background: var(--nx-void);
+  font-family: var(--font-display);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, p { margin: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+
+::selection { background: rgba(32, 214, 231, .30); color: #fff; }
+
+/* Foco: nunca removido sem substituto. */
+:focus-visible {
+  outline: 2px solid rgba(32, 214, 231, .85);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+/* ───────── Skip link ───────── */
+.skip-link {
+  position: fixed; left: 12px; top: 12px; z-index: 9999;
+  transform: translateY(-160%);
+  background: #F8FAFC; color: #02040A;
+  padding: 10px 14px; border-radius: 10px;
+  font-size: 14px; font-weight: 600; text-decoration: none;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.skip-link:focus { transform: none; }
+
+/* ───────── Header ───────── */
+.nx-header {
+  position: fixed; inset: 0 0 auto; z-index: 50;
+  min-height: 76px;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  pointer-events: none;
+}
+.nx-header > * { pointer-events: auto; }
+
+/* Véu muito sutil: mantém o logo e os links legíveis sobre o texto que rola por baixo. */
+.nx-header-veil {
+  position: fixed; inset: 0 0 auto; height: 108px; z-index: 49; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(2, 4, 10, .78), rgba(2, 4, 10, .38) 55%, rgba(2, 4, 10, 0));
+}
+
+.nx-logo {
+  display: inline-flex; align-items: center; gap: 10px;
+  color: var(--nx-text); text-decoration: none;
+  font-weight: 700; font-size: 15px; letter-spacing: .14em;
+}
+.nx-logo svg { width: 22px; height: 22px; flex: none; }
+
+.nx-nav { display: flex; gap: 28px; margin-inline: auto; }
+.nx-nav a {
+  position: relative; padding: 14px 0; min-height: 44px;
+  color: var(--nx-muted); text-decoration: none;
+  font-size: var(--text-nav); letter-spacing: .025em; line-height: 1.2;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.nx-nav a::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 2px; height: 1px;
+  background: var(--nx-gradient-signal);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.nx-nav a:hover, .nx-nav a:focus-visible, .nx-nav a[aria-current="true"] { color: var(--nx-text); }
+.nx-nav a:hover::after, .nx-nav a:focus-visible::after, .nx-nav a[aria-current="true"]::after { transform: scaleX(1); }
+
+.nx-header-actions { display: flex; align-items: center; gap: 12px; }
+
+.nx-menu-btn {
+  display: none; width: 44px; height: 44px; padding: 0;
+  align-items: center; justify-content: center;
+  background: transparent; border: 1px solid rgba(168, 179, 199, .22); border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.nx-menu-btn:hover { border-color: rgba(125, 211, 252, .5); }
+.nx-menu-btn span, .nx-menu-btn span::before {
+  display: block; width: 16px; height: 1.5px; background: var(--nx-text); border-radius: 2px;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.nx-menu-btn span { position: relative; }
+.nx-menu-btn span::before { content: ""; position: absolute; top: 5px; left: 0; }
+.nx-menu-btn span { transform: translateY(-2.5px); }
+.nx-menu-btn[aria-expanded="true"] span { transform: translateY(0) rotate(45deg); }
+.nx-menu-btn[aria-expanded="true"] span::before { transform: translateY(-5px) rotate(-90deg); top: 5px; }
+
+/* Menu mobile: único uso funcional de “Surface”. */
+.nx-menu {
+  position: fixed; z-index: 48; inset: 0; padding: 92px 24px 32px;
+  background: var(--nx-surface);
+  display: flex; flex-direction: column; gap: 6px;
+  visibility: hidden; opacity: 0; transform: translate3d(0, -8px, 0);
+  transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out), visibility 0s linear var(--dur-base);
+}
+.nx-menu.is-open { visibility: visible; opacity: 1; transform: none; transition-delay: 0s; }
+html.nx-menu-open { overflow: hidden; }
+.nx-menu a {
+  display: block; padding: 16px 4px; text-decoration: none;
+  font-size: clamp(28px, 8vw, 40px); letter-spacing: -.03em; color: var(--nx-text);
+  border-bottom: 1px solid rgba(168, 179, 199, .12);
+}
+.nx-menu a:hover, .nx-menu a:focus-visible { color: var(--nx-cyan); }
+
+/* ───────── Rodapé mínimo ───────── */
+.nx-footer {
+  position: relative; z-index: 2;
+  padding-block: 28px 36px;
+  color: var(--nx-dim); font-size: 13px; letter-spacing: .02em;
+}
+
+@media (max-width: 860px) {
+  .nx-nav { display: none; }
+  .js .nx-menu-btn { display: inline-flex; }
+  .nx-header { min-height: 68px; gap: 12px; }
+  .nx-header-actions { gap: 10px; }
+  .nx-header-veil { height: 92px; }
+}
+
+@media (min-width: 861px) {
+  .nx-menu { display: none !important; }
+}

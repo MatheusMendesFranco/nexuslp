@@ -1,0 +1,94 @@
+/* Nexus — tokens (contrato visual). Valores vêm do Documento Mestre REV 2. */
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../fonts/inter-latin-wght-normal.woff2") format("woff2-variations"),
+       url("../fonts/inter-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Fallback com métricas ajustadas ao Inter: evita salto de layout (CLS) na troca da fonte. */
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial"), local("Helvetica Neue"), local("Helvetica");
+  size-adjust: 107.4%;
+  ascent-override: 90.2%;
+  descent-override: 22.5%;
+  line-gap-override: 0%;
+}
+
+/* Propriedades registradas: permitem transicionar o estado de hover do gradiente. */
+@property --gh { syntax: "<number>"; inherits: true; initial-value: 0; }
+@property --hx { syntax: "<percentage>"; inherits: true; initial-value: 0%; }
+
+:root {
+  /* Nexus / Void */
+  --nx-void: #02040A;
+  --nx-void-soft: #05070D;
+  --nx-surface: #0B1220;
+  --nx-surface-2: #111B2E;
+
+  /* Type */
+  --nx-text: #F8FAFC;
+  --nx-muted: #A8B3C7;
+  --nx-dim: #6F7C95;
+
+  /* Signal colors */
+  --nx-blue: #2F7BFF;
+  --nx-cyan: #20D6E7;
+  --nx-violet: #8B5CF6;
+  --nx-positive: #2DD881;
+
+  /* Living gradients */
+  --nx-gradient-message: linear-gradient(
+    105deg,
+    #F8FAFC 0%,
+    #7DD3FC 22%,
+    #20D6E7 42%,
+    #2F7BFF 68%,
+    #8B5CF6 88%,
+    #F8FAFC 115%
+  );
+  --nx-gradient-signal: linear-gradient(115deg, #20D6E7 0%, #2F7BFF 48%, #8B5CF6 100%);
+  --nx-gradient-halo: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(32, 214, 231, .12), rgba(47, 123, 255, .06) 24%, transparent 58%);
+
+  /* Fases do gradiente por verbo/momento (variações do mesmo espectro). */
+  --nx-g-pulse:   linear-gradient(105deg, #BDF3FF 0%, #20D6E7 48%, #7DD3FC 100%);
+  --nx-g-capture: linear-gradient(105deg, #F8FAFC 0%, #7DD3FC 30%, #20D6E7 70%, #F8FAFC 112%);
+  --nx-g-link:    linear-gradient(105deg, #F8FAFC 0%, #20D6E7 34%, #2F7BFF 78%, #F8FAFC 115%);
+  --nx-g-build:   linear-gradient(105deg, #F8FAFC 0%, #2F7BFF 36%, #8B5CF6 82%, #F8FAFC 115%);
+
+  /* Typography */
+  --font-display: "Inter", "Inter Fallback", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-caption: 12px;
+  --text-nav: 14px;
+  --text-body: clamp(16px, 1.2vw, 18px);
+  --text-lead: clamp(22px, 2.7vw, 38px);
+  --text-h2: clamp(36px, 6.2vw, 88px);
+  --text-display: clamp(42px, 7vw, 113px);
+
+  /* Rhythm */
+  --space-unit: 6px;
+  --page-max: 1280px;
+  --section-y: clamp(84px, 12vw, 180px);
+  --radius: 24px;
+  --radius-pill: 9999px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --ease-soft: cubic-bezier(.22, .61, .36, 1);
+  --dur-fast: 140ms;
+  --dur-base: 240ms;
+  --dur-slow: 480ms;
+
+  /* Pointer variables — JS atualiza apenas o elemento ambiente */
+  --px: 0;
+  --py: 0;
+  --mx: 50%;
+  --my: 50%;
+  --scroll: 0;
+}

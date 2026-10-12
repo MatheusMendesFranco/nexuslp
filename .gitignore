@@ -1,0 +1,14 @@
+# Credenciais e configuração local
+.env
+.env.*
+!.env.example
+
+# Arquivos locais e dependências
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
