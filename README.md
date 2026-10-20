@@ -35,8 +35,8 @@ O arquivo `.openai/hosting.json` mantém a configuração e a identidade do Site
 
 ## Versão exportada
 
-Código da versão 4 publicada no Sites, incluindo a correção de renderização do fundo no smartphone.
+Código da versão 5 publicada no Sites: copy revisada em linguagem simples e seção sobre a Nexus dedicada ao que entregamos. O design, as animações e a correção de renderização no smartphone foram preservados.
 
-Commit de origem: `6f69601e97a311fac06fe0413ac7e600a756dcf8`.
+Commit de origem: `067f70dabf78fc2501f30420d31e76c28c1078ea`.
 
-Exportado em 12/10/2026. Os arquivos do site são idênticos aos desse commit; este README e o `.gitignore` foram acrescentados para facilitar o uso do repositório.
+Atualizado em 20/10/2026. Os arquivos do site são idênticos aos desse commit; este README e o `.gitignore` foram acrescentados para facilitar o uso do repositório.
