@@ -20,7 +20,7 @@ test('4 pages: unique IDs, one H1, existing local assets/routes and ARIA referen
   assert.doesNotMatch(html,/connect\.facebook\.net|facebook\.com\/tr|<noscript><img/);
   assert.doesNotMatch(html,/raspagem|scraping/i);
  }
- assert.ok(markup('privacidade/index.html').includes('<!-- PRIVACIDADE:CONTEUDO -->'));
+ assert.ok(markup('privacidade/index.html').includes('64.020.297/0001-30') && !markup('privacidade/index.html').includes('<!--'));
 });
 test('Commercial links work without JS and use exact per-origin message',()=>{
  const env=app();
