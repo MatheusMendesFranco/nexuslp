@@ -44,7 +44,9 @@
     const main = $('#conteudo');
     const footer = $('.nx-footer');
     if (!btn || !menu) return;
+    menu.inert = true;
     const set = open => {
+      menu.inert = !open;
       menu.classList.toggle('is-open', open);
       root.classList.toggle('nx-menu-open', open);
       btn.setAttribute('aria-expanded', String(open));
@@ -146,7 +148,7 @@
   const scenes = $$('[data-scene]').map((el, i) => {
     const content = $('.nx-scene-content', el) || el;
     const sc = {
-      el, content, i, id: el.dataset.scene, stage: el.hasAttribute('data-stage'), flow: el.hasAttribute('data-flow'),
+      el, content, i, id: el.dataset.scene, formation: el.dataset.formation || el.dataset.scene, stage: el.hasAttribute('data-stage'), flow: el.hasAttribute('data-flow'),
       a: 0, b: 0, lo: 0, hi: 0, q: 0, vis: i === 0,
       tx: { heat: 0, born: 0, leave: 0 },
       reveals: [], grads: [], words: [], ctas: [], anchor: null, kq: {}, ctaNear: 0,
@@ -175,6 +177,7 @@
     return sc;
   });
   const NS = scenes.length;
+  if (!NS) { root.classList.remove('nx-live'); return; }
   const byId = Object.fromEntries(scenes.map(s => [s.id, s]));
 
   // Rectangles are measured only after resize/font/layout changes. Scroll and
@@ -335,7 +338,9 @@
 
       for (const r of sc.reveals) updateReveal(r);
       for (const step of sc.steps) {
-        const v = sstep(.25 + step.index * .075, .46 + step.index * .075, q);
+        const v = sc.formation === 'method'
+          ? sstep(.18 + step.index * .15, .33 + step.index * .15, q)
+          : sstep(.25 + step.index * .075, .46 + step.index * .075, q);
         if (Math.abs(v-step.value)>.004) { step.value=v; step.el.style.setProperty('--step-active',v.toFixed(3)); }
       }
 
@@ -351,7 +356,7 @@
       }
       if (!sc.anchorGrad) sc.tx.heat = heat;
 
-      if (sc.id === 'process') updateWords(sc, hq(q) * 4);
+      if (sc.words.length) updateWords(sc, hq(q) * 4);
 
       if (sc.ctas.length) {
         const x = (sc.id === 'contact' ? mix(-18, 100, sstep(0.5, 0.95, q)) : mix(0, 70, q)) + (ptr.nx - 0.5) * 24 * sc.ctaNear;
@@ -704,9 +709,9 @@
   };
   const anchors = {};
 
-  function buildHero(F, q) {
+  function buildHero(F, q, scene) {
     fillLoose(F);
-    const h = .09 + .91 * hq(q), tx = byId.hero.tx, H0 = T.hero, Mh = H0.M;
+    const h = .09 + .91 * hq(q), tx = scene ? scene.tx : {heat:0,born:0,leave:0}, H0 = T.hero, Mh = H0.M;
     const th = (h - 0.5) * 0.5, cs = Math.cos(th), breath = 1 + 0.03 * Math.sin(h * 5);
     const hot = tx.heat, front = tx.born;
     for (let j = 0; j < Mh; j++) {
@@ -735,9 +740,9 @@
     }
   }
 
-  function buildContext(F, q) {
+  function buildContext(F, q, scene) {
     fillLoose(F);
-    const C = T.ctx, tx = byId.context.tx;
+    const C = T.ctx, tx = scene ? scene.tx : {heat:0,born:0,leave:0};
     const coreW0 = sstep(0.32, 0.46, q);
     const att = [];
     for (let k = 0; k < CT.length; k++) {
@@ -901,9 +906,9 @@
     for (let i = 0; i < src.nr; i++) { const r = src.rg[i]; ring(dst, r.x, r.y, r.rx, r.ry, r.rot, r.a); }
   }
 
-  function buildFit(F, q) {
+  function buildFit(F, q, scene) {
     fillLoose(F);
-    const FT = T.fit, tx = byId.fit.tx;
+    const FT = T.fit, tx = scene ? scene.tx : {heat:0,born:0,leave:0};
     const fit = sstep(0.06, 0.4, q) * (1 - sstep(0.66, 0.92, q));
     const cx = V.cx, cy = V.cy;
     const rxB = V.w * 0.5, ryB = V.h * 0.5 * 0.7;
@@ -941,9 +946,9 @@
     }
   }
 
-  function buildResult(F, q) {
+  function buildResult(F, q, scene) {
     fillLoose(F);
-    const R = T.res, tx = byId.result.tx;
+    const R = T.res, tx = scene ? scene.tx : {heat:0,born:0,leave:0};
     const org = sstep(0.06, 0.42, q);
     const x0 = mob ? W * 0.06 : W * 0.33, x1 = mob ? W * 0.94 : W * 0.95;
     const sp = V.h * (mob ? 0.16 : 0.17), cy = V.cy;
@@ -981,9 +986,9 @@
     }
   }
 
-  function buildContact(F, q) {
+  function buildContact(F, q, scene) {
     fillLoose(F);
-    const C = T.con, h = hq(q), tx = byId.contact.tx;
+    const C = T.con, h = hq(q), tx = scene ? scene.tx : {heat:0,born:0,leave:0};
     const cta = anchors.cta || { x: V.cx, y: V.cy, w: 280, h: 52 };
     // anéis de espaçamento aditivo (halo), contidos pela margem esquerda da página
     const room = Math.max(cta.w * 0.5 + 14, cta.x - 10);
@@ -1034,7 +1039,7 @@
 
   // Tool and execution: two independent tracks progressively connect, sharing
   // the same nodes and scroll energy as the rest of the page.
-  function buildDifference(F, q) {
+  function buildDifference(F, q, scene) {
     fillLoose(F);
     const count = 18, formed = sstep(.06, .33, q), linked = sstep(.26, .72, q);
     const cx = mob ? W * .81 : W * .80;
@@ -1053,10 +1058,10 @@
       }
       pulse(F, j => track * count + j, count, q * 2.2 + track * (1-linked) * .35, formed * .5);
     }
-    if (anchors.difference && byId.difference.tx.heat > .05) {
+    if (anchors.difference && (scene ? scene.tx.heat : 0) > .05) {
       const t = tracer(F); t.sp = anchors.difference; t.ep = {x:cx,y:cy};
       t.bend = .12; t.u = sstep(.36,.88,q); t.tail = .18;
-      t.a = byId.difference.tx.heat * .6;
+      t.a = (scene ? scene.tx.heat : 0) * .6;
     }
   }
 
@@ -1083,8 +1088,8 @@
     }
   }
 
-  function buildJourney(F,q) {
-    buildContext(F,q);
+  function buildJourney(F,q,scene) {
+    buildContext(F,q,scene);
     const org = sstep(.18,.66,q), count=6;
     const left = mob ? W*.79 : W*.72, span=mob ? W*.13 : W*.24;
     const baseY = mob ? H*.68 : H*.48;
@@ -1107,7 +1112,79 @@
     pulse(F,j=>j*count,5,q*2.2,org*.7,.18);
   }
 
-  const builderFor = id => ({ hero: buildHero, context: buildJourney, process: buildProcess, fit: buildFit, difference: buildDifference, result: buildResult, about: buildAbout, contact: buildContact }[id]);
+  // Product narratives use the existing node field, edge and pulse primitives.
+  // q stays deterministic and reversible; interactive demos may set a discrete step.
+  function buildProspect(F, q, scene) {
+    fillLoose(F);
+    const requested = scene && Number(scene.el.dataset.narrativeStep);
+    const p = scene && scene.el.hasAttribute('data-narrative-step') && Number.isFinite(requested)
+      ? clamp(requested) : hq(q);
+    const identify = sstep(.02,.22,p), connect = sstep(.20,.44,p);
+    const converse = sstep(.43,.69,p), meeting = sstep(.70,.98,p);
+    const cx = V.cx, cy = V.cy, width = V.w * .82, height = V.h * .65;
+    const count = Math.min(36,N);
+    for(let i=0;i<count;i++) {
+      const group=Math.floor(i/6), row=i%6, selected=row<3;
+      const gx=cx+(group/5-.5)*width, gy=cy+(row/5-.5)*height;
+      const targetX=cx-width*.35+group*width*.14;
+      const targetY=cy+Math.sin(group*.7)*height*.15+(row-2.5)*height*.04*(1-meeting);
+      const assembled=selected ? identify : identify*.24;
+      F.x[i]=mix(lx[i],mix(gx,targetX,connect),assembled);
+      F.y[i]=mix(ly[i],mix(gy,targetY,connect),assembled);
+      F.m[i]=selected ? .35+.65*identify : .12*(1-converse);
+      F.g[i]=selected ? identify*(.25+converse*.5+meeting*.25) : .04;
+      if(selected && row>0) edge(F,group*6,i,connect*.6,0,converse,.1+group*.12);
+    }
+    for(let j=0;j<5;j++) edge(F,j*6,(j+1)*6,connect*.8,1,converse,j/5);
+    ring(F,cx+width*.35,cy,height*.14,height*.14,0,meeting*.32);
+    pulse(F,j=>j*6,6,p*2.3,connect*.75,.18);
+  }
+
+  function buildDesk(F,q,scene) {
+    fillLoose(F);
+    const requested=scene && Number(scene.el.dataset.narrativeStep);
+    const p=scene && scene.el.hasAttribute('data-narrative-step') && Number.isFinite(requested)
+      ? clamp(requested) : hq(q);
+    const cx=V.cx,cy=V.cy, span=V.w*.78;
+    const formed=sstep(0,.24,p), queried=sstep(.27,.60,p), routed=sstep(.62,1,p);
+    for(let group=0;group<5;group++) {
+      for(let k=0;k<6;k++) {
+        const i=group*6+k, theta=k*TAU/6;
+        const x=cx+(group/4-.5)*span+Math.cos(theta)*V.w*.035;
+        const y=cy+Math.sin(theta)*V.h*.08+(group===4?(k<3?-1:1)*routed*V.h*.16:0);
+        F.x[i]=mix(lx[i],x,formed); F.y[i]=mix(ly[i],y,formed);
+        F.m[i]=.2+.8*formed; F.g[i]=formed*(.16+queried*.55);
+        if(k) edge(F,group*6,i,formed*.35,0,queried,group/5);
+      }
+      if(group<4) edge(F,group*6,(group+1)*6,formed*.7,1,queried,group/5);
+    }
+    ring(F,cx,cy,V.w*.12,V.h*.19,0,queried*.2);
+    pulse(F,j=>j*6,5,p*2.6,formed*.8,.2);
+  }
+
+  function buildMethod(F,q) {
+    fillLoose(F);
+    const p=hq(q), formed=sstep(0,.16,p);
+    for(let step=0;step<5;step++) {
+      const cx=V.cx+(step/4-.5)*V.w*.8;
+      const cy=V.cy+Math.sin(step*.8)*V.h*.16;
+      const active=sstep(step*.16,step*.16+.24,p);
+      for(let k=0;k<6;k++) {
+        const i=step*6+k, theta=k*TAU/6;
+        F.x[i]=mix(lx[i],cx+Math.cos(theta)*(k?V.w*.035:0),formed);
+        F.y[i]=mix(ly[i],cy+Math.sin(theta)*(k?V.h*.05:0),formed);
+        F.m[i]=formed*(.3+.7*active); F.g[i]=active;
+        if(k) edge(F,step*6,i,active*.45,0,active,step/5);
+      }
+      if(step) edge(F,(step-1)*6,step*6,active*.85,1,active,step/5);
+    }
+    pulse(F,j=>j*6,5,p*1.3,formed*.65,.2);
+  }
+
+  const builders = Object.freeze({hero:buildHero,context:buildJourney,process:buildProcess,
+    fit:buildFit,difference:buildDifference,result:buildResult,about:buildAbout,contact:buildContact,
+    prospect:buildProspect,desk:buildDesk,method:buildMethod});
+  const builderFor = id => Object.prototype.hasOwnProperty.call(builders, id) ? builders[id] : fillLoose;
 
   /* ─── Composição: voo entre formações ─── */
 
@@ -1514,7 +1591,7 @@
   /* ═════════════════════ Loop ═════════════════════ */
 
   function readAnchors() {
-    const near = sc => sc.i === si || (st > 0 && sc.i === si + 1);
+    const near = sc => !!sc && (sc.i === si || (st > 0 && sc.i === si + 1));
     for (const sc of scenes) if(sc.anchor) anchors[sc.id]=near(sc)?textEnd(sc):null;
     if (ctaEl && near(byId.contact)) {
       const r=rectAt(ctaEl);
@@ -1538,15 +1615,16 @@
     }
   }
 
-  const ctaEl = $('[data-cta-origin="final"]');
+  const ctaEl = $('[data-final-cta]') || $('[data-cta-origin="final"]');
   let navIdx = -1;
-  const NAV_FOR = {hero:'#inicio', context:'#o-que-fazemos', process:'#como-funciona', about:'#quem-somos', contact:'#contato'};
+  const NAV_FOR = {hero:'#inicio', context:'#o-que-fazemos', process:'#como-funciona', about:'#quem-somos',
+    dores:'#dores', metodo:'#metodo', confianca:'#confianca', duvidas:'#duvidas', contact:'#contato'};
   function syncNav() {
     const idx = st > 0.5 ? Math.min(NS - 1, si + 1) : si;
     if (idx === navIdx) return;
     navIdx = idx;
     const hash = NAV_FOR[scenes[idx].id] || null;
-    $$('.nx-nav a').forEach(a => { if (a.getAttribute('href') === hash) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
+    $$('.nx-nav a[href^="#"]').forEach(a => { if (a.getAttribute('href') === hash) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
   }
 
   /** 1 — SINAIS: transforma o que o visitante faz em números contínuos (SIG). */
@@ -1624,11 +1702,11 @@
     // 3c. campo narrativo: formações por cena → voo → reação aos sinais → desenho
     computeLoose();
     const sA = scenes[si], sB = st > 0 ? scenes[Math.min(NS - 1, si + 1)] : null;
-    builderFor(sA.id)(FA, sA.q);
-    if (sB) builderFor(sB.id)(FB, sB.q);
+    builderFor(sA.el.dataset.formation || sA.formation)(FA, sA.q, sA);
+    if (sB) builderFor(sB.el.dataset.formation || sB.formation)(FB, sB.q, sB);
     compose(st, FA, sB ? FB : null);
     react(now);
-    const aOpacity=sA.id==='about'?.42:1, bOpacity=sB&&sB.id==='about'?.42:1;
+    const aOpacity=sA.formation==='about'?.42:1, bOpacity=sB&&sB.formation==='about'?.42:1;
     const fieldOpacity=mix(aOpacity,bOpacity,smooth(st));
     if(surface===canvas && (canvas._opacity===undefined || Math.abs(canvas._opacity-fieldOpacity)>.01)) {
       canvas._opacity=fieldOpacity;canvas.style.opacity=fieldOpacity.toFixed(2);
@@ -1692,6 +1770,8 @@
   if (window.ResizeObserver) new ResizeObserver(() => { layoutDirty = true; kick(); }).observe(document.body);
   addEventListener('pageshow', () => { layoutDirty = true; lastT = 0; kick(); });
   addEventListener('load', () => { layoutDirty = true; kick(); });
+  addEventListener('nexus:narrative', () => { layoutDirty = true; kick(); });
+  document.addEventListener('toggle', () => { layoutDirty = true; kick(); }, true);
 
   // IntersectionObserver: estados de seção e economia de escrita em estilos
   if (window.IntersectionObserver) {
