@@ -28,6 +28,98 @@ test('Commercial links work without JS and use exact per-origin message',()=>{
   assert.equal(el.getAttribute('href'),env.window.NEXUS.whatsapp.url(el.dataset.ctaOrigin));assert.equal(el.getAttribute('target'),'_blank');assert.match(el.getAttribute('rel'),/noopener/);assert.match(el.getAttribute('aria-label'),/nova aba/);
  }
 });
+test('I-01: six approved CTA captions and accessible names never include attribution',()=>{
+ const labels={hero:'Quero melhorar meu comercial',final:'Conversar com a Nexus','lf-hero':'Quero conhecer a Linha de Frente','lf-final':'Quero conhecer a Linha de Frente','bd-hero':'Quero conhecer o Balcão Digital','bd-final':'Quero conhecer o Balcão Digital'};
+ let count=0;
+ for(const file of pages){
+  const staticDoc=environment(markup(file)).document,env=app({},file);
+  for(const origin of Object.keys(labels)){
+   const selector=`[data-cta-origin="${origin}"]`,link=staticDoc.querySelector(selector);
+   if(!link)continue;
+   count++;
+   const label=labels[origin],accessible=label+' (abre o WhatsApp em nova aba)';
+   assert.equal(link.textContent,label);assert.equal(link.getAttribute('aria-label'),accessible);
+   const live=env.document.querySelector(selector);assert.equal(live.textContent,label);assert.equal(live.getAttribute('aria-label'),accessible);
+   // A stale/contaminated caption must not contaminate prepare() again.
+   live.querySelector('span').textContent=label+' '+origin;
+   env.window.NEXUS.whatsapp.prepare(live);env.window.NEXUS.whatsapp.prepare(live);
+   assert.equal(live.textContent,label);assert.equal(live.getAttribute('aria-label'),accessible);assert.equal(live.dataset.ctaOrigin,origin);
+  }
+ }
+ assert.equal(count,6);
+});
+test('I-02: both article and footer reopen preferences, focus the dialog and restore the opener',()=>{
+ const env=app({},'privacidade/index.html'),doc=env.document,dialog=doc.querySelector('dialog');
+ for(const opener of [doc.querySelector('[data-consent-open]'),doc.querySelector('[data-cookie-preferences]')]){
+  assert.ok(opener);opener.focus();opener.click();assert.equal(dialog.open,true);assert.ok(dialog.contains(doc.activeElement));
+  dialog.querySelector('[data-consent="close"]').click();assert.equal(dialog.open,false);assert.equal(doc.activeElement,opener);
+ }
+ doc.querySelector('[data-consent="accept"]').click();
+ const article=doc.querySelector('[data-consent-open]');article.focus();article.click();
+ dialog.querySelector('[data-consent="reject"]').click();assert.equal(doc.activeElement,article);assert.equal(env.reloads,1);
+ const reloaded=app({storage:env.storageValue},'privacidade/index.html');assert.equal(reloaded.window.fbq,undefined);assert.equal(reloaded.document.querySelector('#nexus-meta-pixel'),null);
+});
+test('I-03: hiding the active control blurs it in the fixture; LF keeps keyboard continuity',()=>{
+ for(const file of ['index.html','linha-de-frente/index.html']){
+  const env=app({},file),doc=env.document;
+  const start=doc.querySelector('[data-lf-start]'),next=doc.querySelector('[data-lf-next]'),reset=doc.querySelector('[data-lf-reset]');
+  start.focus();start.hidden=true;assert.equal(doc.activeElement,doc.body);start.hidden=false;
+  start.focus();start.click();assert.equal(doc.activeElement,next,'Start must focus the next visible control');
+  while(!next.hidden){next.click();assert.equal(doc.activeElement,next.hidden?reset:next);}
+  reset.click();assert.equal(doc.activeElement,next,'Restart must focus next');
+  if(file!=='index.html'){
+   for(let i=0;i<5;i++)next.click();
+   const variant=doc.querySelector('[data-lf-variant]');assert.equal(variant.hidden,false);variant.focus();variant.click();
+   assert.equal(variant.hidden,true);assert.equal(doc.activeElement,next);next.click();assert.equal(doc.activeElement,reset);
+  }
+ }
+});
+test('I-04: consent expires at 12 calendar months, including leap day, and rejects another version',()=>{
+ const record=(stamp,version=1)=>JSON.stringify({version,measurement:true,marketing:true,updatedAt:stamp});
+ const issued='2025-11-14T12:00:00.000Z',limit=Date.parse('2026-11-14T12:00:00.000Z');
+ for(const [stamp,now,version,valid] of [[issued,limit-1,1,true],[issued,limit,1,false],[issued,limit+1,1,false],['2024-02-29T09:00:00.000Z',Date.parse('2025-02-28T08:59:59.999Z'),1,true],['2024-02-29T09:00:00.000Z',Date.parse('2025-02-28T09:00:00.000Z'),1,false],['2026-01-01T00:00:00.000Z',limit,2,false],['2027-01-01T00:00:00.000Z',limit,1,false]]){
+  const env=app({storage:record(stamp,version),dateNow:now});
+  assert.equal(env.document.querySelector('.nx-cookie-banner').hidden,valid);
+  assert.equal(env.window.NEXUS.consent.get().marketing,valid);
+  assert.equal(!!env.document.querySelector('#nexus-meta-pixel'),valid);
+  if(!valid)assert.equal(env.window.fbq,undefined);
+ }
+});
+test('I-04: active sessions expire and legacy/cross-tab restoration never renews the timestamp',()=>{
+ const stamp='2025-11-14T12:00:00.000Z',limit=Date.parse('2026-11-14T12:00:00.000Z');
+ const record=JSON.stringify({version:1,measurement:true,marketing:false,updatedAt:stamp});
+ const env=app({storage:record,dateNow:limit-1000});
+ env.advanceTime(999);assert.equal(env.window.NEXUS.consent.get().measurement,true);
+ env.advanceTime(1);assert.equal(env.document.querySelector('.nx-cookie-banner').hidden,false);assert.equal(env.window.NEXUS.consent.get().measurement,false);
+ const legacy=app({legacyStorage:record,dateNow:limit-1000});
+ assert.equal(JSON.parse(legacy.storageValue).updatedAt,stamp);assert.equal(legacy.storageEntries.has('nexus.consent.v1'),false);
+ legacy.event('storage',{key:'nexus-consent',newValue:record});assert.equal(legacy.window.NEXUS.consent.get().updatedAt,stamp);
+ legacy.advanceTime(1000);assert.equal(legacy.document.querySelector('.nx-cookie-banner').hidden,false);
+ const marketing=app({storage:JSON.stringify({version:1,measurement:true,marketing:true,updatedAt:stamp}),dateNow:limit-1000});
+ marketing.advanceTime(1000);assert.equal(marketing.window.NEXUS.consent.get().marketing,false);assert.equal(marketing.reloads,1);
+ const blocked=app({legacyStorage:saved(true,true),storageWriteError:true});blocked.document.querySelector('[data-consent="reject"]').click();assert.equal(blocked.storageEntries.has('nexus.consent.v1'),false);assert.equal(blocked.reloads,1);
+});
+test('I-04: accessible retention table and policy publish the same explicit periods',()=>{
+ const env=app(),table=env.document.querySelector('.nx-cookie-table');
+ assert.ok(table.querySelector('caption'));assert.equal(table.querySelectorAll('th[scope="col"]').length,3);assert.equal(table.querySelectorAll('th[scope="row"]').length,2);
+ assert.match(table.textContent,/nexus-consent \(armazenamento local\)/);assert.match(table.textContent,/12 meses/);assert.match(table.textContent,/_fbp \/ _fbc \(Meta, só com marketing\)/);assert.match(table.textContent,/90 dias, conforme a Meta/);
+ const policy=markup('privacidade/index.html');assert.doesNotMatch(policy,/conforme a tabela do banner|Conforme o banner de cookies/);
+ assert.equal((policy.match(/12 meses\. _fbp \/ _fbc/g)||[]).length,1);assert.equal((policy.match(/90 dias, conforme a Meta/g)||[]).length,2);
+});
+test('I-05: public copy describes configured behavior and follow-up without absolute AI promises',()=>{
+ const publicSources=[...pages.map(markup),...fs.readdirSync(path.join(root,'js')).filter(f=>f.endsWith('.js')).map(f=>fs.readFileSync(path.join(root,'js',f),'utf8'))];
+ publicSources.forEach(text=>assert.doesNotMatch(text,/não inventa|nunca erra|não comete erros|respostas? (?:sempre )?sem erros/i));
+ for(const file of ['index.html','balcao-digital/index.html','privacidade/index.html']){
+  assert.match(markup(file),/configurado para/i);assert.match(markup(file),/As conversas são acompanhadas para corrigir falhas/);
+ }
+ assert.match(app().window.NEXUS.content.chats[3].note,/As conversas são acompanhadas para corrigir falhas/);
+});
+test('M-01: each page has its own absolute canonical and matching og:url',()=>{
+ for(const file of pages){const doc=environment(markup(file)).document,url='https://nexusfluxo.com/'+(file==='index.html'?'':file.replace('index.html',''));
+  const canonical=doc.querySelectorAll('link[rel="canonical"]'),og=doc.querySelectorAll('meta[property="og:url"]');
+  assert.equal(canonical.length,1);assert.equal(og.length,1);assert.equal(canonical[0].getAttribute('href'),url);assert.equal(og[0].getAttribute('content'),url);
+ }
+});
 test('No consent or malformed storage: no pixel, no event queue',()=>{
  for(const storage of [null,'broken',JSON.stringify({version:1,marketing:'true',measurement:true}),saved(false,false)]){
   const env=app({storage});assert.equal(env.document.querySelector('#nexus-meta-pixel'),null);assert.equal(env.window.fbq,undefined);
@@ -55,7 +147,7 @@ test('Acceptance inserts pixel once; revocation reloads only after successfully 
  const unavailable=app({storageReadError:true,storageWriteError:true});unavailable.document.querySelector('[data-consent="reject"]').click();assert.equal(unavailable.window.NEXUS.consent.get().marketing,false);assert.equal(unavailable.window.fbq,undefined);
 });
 test('Cross-tab revocation stops tracking and clears previous consent',()=>{
- const env=app({storage:saved(true,true)});env.event('storage',{key:'nexus.consent.v1',newValue:saved(false,false)});assert.equal(env.window.NEXUS.consent.get().marketing,false);const before=env.window.fbq.queue.length;env.window.NEXUS.track('whatsapp_exit',{origin:'hero'});assert.equal(env.window.fbq.queue.length,before);assert.equal(env.reloads,1);
+ const env=app({storage:saved(true,true)});env.event('storage',{key:'nexus-consent',newValue:saved(false,false)});assert.equal(env.window.NEXUS.consent.get().marketing,false);const before=env.window.fbq.queue.length;env.window.NEXUS.track('whatsapp_exit',{origin:'hero'});assert.equal(env.window.fbq.queue.length,before);assert.equal(env.reloads,1);
 });
 test('Events are identifiers only, and no Lead conversion is emitted',()=>{
  const env=app({storage:saved(true,true)});env.document.querySelector('[data-cta-origin="hero"]').click();

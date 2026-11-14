@@ -15,6 +15,10 @@
 .nx-cookie-option label { display:flex; align-items:center; gap:12px; min-height:44px; font-size:16px; cursor:pointer; }
 .nx-cookie-option input { width:22px; height:22px; accent-color:var(--nx-cyan); flex:none; }
 .nx-cookie-dialog .nx-cookie-actions { margin-top:24px; }
+.nx-cookie-table { width:100%; margin-block:24px; border-collapse:collapse; table-layout:fixed; font-size:13px; line-height:1.6; }
+.nx-cookie-table caption { text-align:left; color:var(--nx-text); font-size:16px; font-weight:500; padding-bottom:12px; }
+.nx-cookie-table th,.nx-cookie-table td { text-align:left; vertical-align:top; padding:12px 8px; border-bottom:1px solid #a8b3c730; overflow-wrap:anywhere; }
+.nx-cookie-table tbody th,.nx-cookie-table td { color:var(--nx-muted); font-weight:400; }
 .nx-cookie-toast { position:fixed; z-index:100; bottom:24px; left:50%; transform:translateX(-50%); border-radius:999px; background:var(--nx-surface); padding:12px 20px; pointer-events:none; }
 .nx-cookie-toast:empty { display:none; }
 @media(max-width:1100px) { .nx-cookie-banner { grid-template-columns:minmax(0,1fr); gap:14px; } }

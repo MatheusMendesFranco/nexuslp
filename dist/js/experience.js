@@ -45,6 +45,9 @@
     const reset=demo.querySelector('[data-lf-reset]');
     let index=-1;
     function show(i,action) {
+      // Browsers blur a control as soon as hidden removes it from layout.
+      const activeControl=document.activeElement;
+      const hadControlFocus=[start,next,variant,reset].includes(activeControl);
       index=i;
       const step=steps[index];
       output.replaceChildren();
@@ -58,9 +61,7 @@
       if (step.tag) output.append(make('p',step.tag,'nx-demo-note'));
       start.hidden=true; next.hidden=index===steps.length-1; reset.hidden=false;
       variant.hidden=short||index!==5;
-      // Preserve keyboard focus when the activated button becomes hidden.
-      if (document.activeElement===start) next.focus({preventScroll:true});
-      if (next.hidden && document.activeElement===next) reset.focus({preventScroll:true});
+      if (hadControlFocus) (next.hidden ? reset : next).focus({preventScroll:true});
       narrative(demo,'prospect',index/Math.max(1,steps.length-1));
       track('demo_interaction',{demo:'lf',step:String(index+1),action,origin:short?'home-demo':'lf-demo'});
     }
@@ -70,7 +71,7 @@
       const target=!short&&index===5?7:index+1;
       if(target<steps.length) show(target,'next');
     });
-    variant.addEventListener('click',()=>{show(6,'variant');next.focus({preventScroll:true});});
+    variant.addEventListener('click',()=>show(6,'variant'));
     reset.addEventListener('click',()=>show(0,'restart'));
   });
 

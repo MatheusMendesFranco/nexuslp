@@ -17,13 +17,24 @@
     final: 'Olá! Quero conversar com a Nexus sobre o comercial da minha empresa.',
     menu: 'Olá! Vim pelo site da Nexus e gostaria de conversar.'
   });
+  // Approved captions are independent of attribution identifiers and DOM text.
+  const labels = Object.freeze({
+    hero: 'Quero melhorar meu comercial',
+    final: 'Conversar com a Nexus',
+    'lf-hero': 'Quero conhecer a Linha de Frente',
+    'lf-final': 'Quero conhecer a Linha de Frente',
+    'bd-hero': 'Quero conhecer o Balcão Digital',
+    'bd-final': 'Quero conhecer o Balcão Digital'
+  });
   function url(origin) {
     return 'https://api.whatsapp.com/send/?phone=5521972599900&text=' + encodeURIComponent(messages[origin] || messages.header);
   }
   function prepare(link) {
     link.href = url(link.dataset.ctaOrigin);
     link.target = '_blank'; link.rel = 'noopener noreferrer';
-    link.setAttribute('aria-label', link.textContent.trim() + ' (abre o WhatsApp em nova aba)');
+    const label = labels[link.dataset.ctaOrigin];
+    if (label) (link.querySelector('span') || link).textContent = label;
+    link.setAttribute('aria-label', (label || link.textContent.trim()) + ' (abre o WhatsApp em nova aba)');
   }
   window.NEXUS = window.NEXUS || {};
   window.NEXUS.whatsapp = Object.freeze({url, prepare});

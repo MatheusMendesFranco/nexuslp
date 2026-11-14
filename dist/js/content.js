@@ -146,7 +146,7 @@ window.NEXUS.content = {
         "Encaminhamento humano",
         "Resumo enviado ao corretor: interesse no apt. da Rua das Flores; dúvida sobre troca por veículo."
       ],
-      "note": "Quando não sabe, o atendente avisa e encaminha. Ele não inventa."
+      "note": "É configurado para responder com base nas informações da empresa e encaminhar a uma pessoa o que não estiver na base. As conversas são acompanhadas para corrigir falhas."
     }
   ],
   "lfScenario": "Uma consultoria de contabilidade quer atender clínicas médicas de médio porte.",
