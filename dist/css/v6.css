@@ -128,3 +128,5 @@ button[aria-pressed="true"] { background:var(--nx-surface-2); border-color:var(-
  .nx-method li { --step-active:1 !important; }
  .nx-live .nx-method li > div { transform:none; }
 }
+.nx-legal button[data-consent-open] { min-height:44px; margin-top:32px; padding:0 22px; border:1px solid rgba(32,214,231,.45); border-radius:var(--radius-pill); background:transparent; color:var(--nx-text); font:inherit; font-size:15px; cursor:pointer; }
+.nx-legal button[data-consent-open]:hover, .nx-legal button[data-consent-open]:focus-visible { border-color:var(--nx-cyan); }
