@@ -166,3 +166,19 @@ html:not(.js) .nx-flip-back[hidden] { visibility:visible; opacity:1; transform:n
 .nx-window .nx-consultation li[aria-current="step"] { border-left-color:var(--nx-cyan); background:var(--nx-surface-2); }
 .nx-consultation li span { white-space:nowrap; }
 .nx-chat-stage .nx-typing { position:static; grid-column:1/-1; justify-self:start; }
+/* Polimento 4: compact, equally sized faces; long backs scroll above the footer. */
+.nx-flip-card--pain { height:300px; grid-template-rows:minmax(0,1fr); }
+.nx-method-cards .nx-flip-card { height:260px; grid-template-rows:minmax(0,1fr); }
+.nx-flip-card--pain .nx-flip-trigger,.nx-method-cards .nx-flip-trigger { min-height:0; grid-template-rows:minmax(0,1fr) 56px; }
+.nx-flip-card--pain .nx-flip-front,.nx-method-cards .nx-flip-front { min-height:0; padding:20px; gap:10px; justify-content:start; }
+.nx-flip-card--pain .nx-card-title { font-size:clamp(26px,2.6vw,36px); }
+.nx-method-cards .nx-card-title { font-size:clamp(20px,1.8vw,26px); }
+.nx-card-title { overflow-wrap:anywhere; }
+.nx-card-teaser { display:block; font-size:13px; line-height:1.5; color:var(--nx-muted); font-weight:400; letter-spacing:0; }
+.nx-flip-card--pain .nx-card-signal,.nx-method-cards .nx-card-signal { display:none; }
+.nx-flip-card--pain .nx-flip-back,.nx-method-cards .nx-flip-back { height:calc(100% - 56px); min-height:0; padding:20px; overflow:auto; overscroll-behavior:contain; align-self:start; }
+@media(max-width:767px) {
+ .nx-flip-card--pain { height:360px; }
+ .nx-method-cards .nx-flip-card { height:300px; }
+ .nx-flip-card--pain .nx-card-title { font-size:clamp(26px,7.5vw,34px); }
+}
