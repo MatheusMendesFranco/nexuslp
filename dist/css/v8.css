@@ -53,3 +53,28 @@ body[data-product] .nx-cta:not(.nx-cta--ghost) { background:linear-gradient(115d
  .nx-hero-product .nx-display.nx-product-claim { font-size:30px !important; }
  .nx-hero-product .nx-product-tag { font-size:10px; letter-spacing:.1em; }
 }
+
+/* P4 / P16: mirrored product bands joined by their shared operation. */
+.nx-product-band { background:radial-gradient(ellipse at 10% 40%,color-mix(in srgb,var(--prod-a) 10%,transparent),transparent 65%); border-block:1px solid color-mix(in srgb,var(--prod-a) 18%,transparent); }
+.nx-product-band[data-product="bd"] { background:radial-gradient(ellipse at 90% 40%,color-mix(in srgb,var(--prod-a) 10%,transparent),transparent 65%); }
+.nx-product-band .nx-product-copy > .nx-lockup { margin-block:24px 18px; }
+.nx-product-band .nx-product-name { font-size:clamp(52px,7vw,100px); }
+.nx-product-band .nx-lead { font-size:clamp(20px,2.1vw,28px); max-width:30ch; line-height:1.3; }
+.nx-product-band .nx-product-route { border-color:color-mix(in srgb,var(--prod-a) 50%,transparent); }
+.nx-product-band .nx-conclusion { color:var(--nx-text); font-size:clamp(28px,3vw,42px); }
+.nx-product-band .nx-flow-number { color:var(--prod-text); font-family:var(--font-mono); }
+.nx-product-band .nx-flow-track li::before { background:var(--prod-a); }
+.nx-product-band .nx-text-link { text-decoration-color:var(--prod-a); }
+.nx-product-shortcuts { display:flex; flex-wrap:wrap; gap:12px 28px; margin-top:28px; }
+.nx-product-shortcuts a { min-height:44px; text-decoration:none; }
+.nx-product-shortcuts a:hover .nx-lockup-name { text-decoration:underline; text-underline-offset:6px; }
+.nx-product-connector { position:relative; z-index:3; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:18px; padding-block:36px; }
+.nx-product-connector p { flex-basis:100%; text-align:center; font-size:14px; color:var(--nx-muted); }
+.nx-connector-line { flex:0 1 100px; height:1px; background:var(--nx-gradient-signal); }
+@media(min-width:1024px) { .nx-product-shortcuts { justify-content:center; } }
+@media(max-width:767px) {
+ .nx-product-band .nx-product-name { font-size:44px; }
+ .nx-product-connector { gap:12px; justify-content:start; }
+ .nx-product-connector .nx-connector-line { display:none; }
+ .nx-product-connector p { text-align:left; }
+}

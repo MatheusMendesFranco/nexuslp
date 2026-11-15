@@ -28,6 +28,18 @@ test('V8.2: product identity is present in navigation, body, windows and metadat
  }
  for(const file of pages){const doc=environment(markup(file)).document;assert.equal(doc.querySelectorAll('.nx-footer .nx-lockup').length,2);}
 });
+
+test('V8.2: home bands and shortcuts distinguish both products without replacing their flows',()=>{
+ const doc=environment(markup('index.html')).document;
+ for(const code of ['lf','bd']){
+  const band=doc.querySelector('#solucao-'+code);assert.equal(band.dataset.product,code);
+  assert.ok(band.classList.contains('nx-product-band'));assert.ok(band.querySelector('h2.nx-product-name'));
+  assert.ok(band.querySelector('.nx-lockup'));assert.equal(band.querySelectorAll('.nx-flow-track li').length,5);
+ }
+ assert.equal(doc.querySelectorAll('.nx-product-shortcuts a').length,2);
+ assert.equal(doc.querySelectorAll('.nx-product-connector .nx-lockup').length,2);
+ assert.match(doc.querySelector('.nx-product-connector').textContent,/Funcionam separadas. Podem trabalhar juntas/);
+});
 test('4 pages: unique IDs, one H1, existing local assets/routes and ARIA references',()=>{
  for(const file of pages){const html=markup(file),env=environment(html),doc=env.document;
   assert.equal(doc.querySelectorAll('h1').length,1,file);

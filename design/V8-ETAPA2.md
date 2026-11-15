@@ -24,3 +24,7 @@ Tokens LF/BD, `data-product="lf|bd"`, tags, lockups, glifos e títulos com nome 
 ## Passo 2 — heros P2
 
 Um H1 com o nome do produto, claim aprovado subordinado, descritor de função e janela ilustrativa. No desktop, composição em duas colunas; mobile empilha a janela depois do CTA. E-mail e atendimento têm identificação de simulação; a prévia leva à demo existente. Sem eventos de interação disparados na prévia estática.
+
+## Passo 3 — bands P4 e conector P16
+
+Home com atalhos dos dois produtos, bands com lavagem de cor, tag, lockup e nome em H2. Composição espelhada preserva os cinco passos originais de cada solução. Conector reforça que operam separadas ou juntas. O gradiente de cada band fica no nome, evitando competição com a frase de benefício.
