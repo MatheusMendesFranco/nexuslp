@@ -166,7 +166,7 @@ test('Product views observed before consent are sent once after the respective o
 });
 test('Pain selection changes narrative, panel, selection and announcement',()=>{
  const env=app({storage:saved(true,false)}),doc=env.document;
- for(const id of ['oportunidades','atendimento','retorno','informacao']){doc.querySelector(`[data-pain="${id}"]`).click();assert.equal(doc.querySelectorAll('[data-pain-panel]').filter(x=>!x.hidden).length,1);assert.equal(doc.querySelector(`[data-pain-panel="${id}"]`).hidden,false);assert.equal(doc.querySelector(`[data-pain="${id}"]`).getAttribute('aria-pressed'),'true');assert.ok(doc.querySelector('[data-pain-status]').textContent);}
+ for(const id of ['oportunidades','atendimento','retorno','informacao']){const button=doc.querySelector(`[data-pain="${id}"]`);button.click();assert.equal(doc.querySelector(`[data-pain-panel="${id}"]`).hidden,false);assert.equal(button.getAttribute('aria-pressed'),'true');assert.ok(doc.querySelector('[data-pain-status]').textContent);button.click();assert.equal(button.getAttribute('aria-pressed'),'false');assert.equal(doc.querySelector(`[data-pain-panel="${id}"]`).hidden,true);}
  assert.equal(env.window.dataLayer.filter(e=>e.event==='pain_select').length,4);
 });
 test('LF has 8 editorial steps, optional follow-up branch and meeting; BD has 4 scenarios',()=>{
@@ -175,11 +175,11 @@ test('LF has 8 editorial steps, optional follow-up branch and meeting; BD has 4 
  for(let i=0;i<5;i++)doc.querySelector('[data-lf-next]').click();assert.match(doc.querySelector('[data-lf-output]').textContent,/WhatsApp/);assert.equal(doc.querySelector('[data-lf-variant]').hidden,false);
  doc.querySelector('[data-lf-variant]').click();assert.match(doc.querySelector('[data-lf-output]').textContent,/Sem insistência/);doc.querySelector('[data-lf-next]').click();assert.match(doc.querySelector('[data-lf-output]').textContent,/Reunião agendada/);assert.equal(doc.querySelector('[data-lf-next]').hidden,true);
  doc.querySelector('[data-lf-reset]').click();assert.match(doc.querySelector('[data-lf-output]').textContent,/Perfil/);
- const bd=app({},'balcao-digital/index.html');for(let i=0;i<4;i++){bd.document.querySelector(`[data-chat-choice="${i}"]`).click();assert.ok(bd.document.querySelector('[data-chat-log]').textContent.length>150);}
+ const bd=app({},'balcao-digital/index.html');for(let i=0;i<4;i++){bd.document.querySelector(`[data-chat-choice="${i}"]`).click();bd.advanceTime(450);assert.ok(bd.document.querySelector('[data-chat-log]').textContent.length>150);}
  assert.match(bd.document.querySelector('[data-chat-log]').textContent,/Não tenho essa informação/);
 });
 test('Home short demos and independent selection work',()=>{
- const env=app(),doc=env.document;doc.querySelector('[data-lf-start]').click();assert.match(doc.querySelector('[data-lf-output]').textContent,/1 \/ 3/);doc.querySelector('[data-demo-tab="bd"]').click();assert.equal(doc.querySelector('[data-demo-panel="lf"]').hidden,true);assert.equal(doc.querySelector('[data-demo-panel="bd"]').hidden,false);doc.querySelector('[data-chat-choice="2"]').click();assert.equal(doc.querySelector('[data-chat-log]').querySelectorAll('.nx-chat-bubble').length,4);
+ const env=app({width:360}),doc=env.document;doc.querySelector('[data-lf-start]').click();assert.match(doc.querySelector('[data-lf-output]').textContent,/1 \/ 4/);doc.querySelector('[data-demo-tab="bd"]').click();assert.equal(doc.querySelector('[data-demo-panel="lf"]').hidden,true);assert.equal(doc.querySelector('[data-demo-panel="bd"]').hidden,false);doc.querySelector('[data-chat-choice="2"]').click();env.advanceTime(450);assert.equal(doc.querySelector('[data-chat-log]').querySelectorAll('.nx-chat-bubble').length,4);
 });
 test('Engine on all pages at 8 widths: finite coordinates, scroll, reverse, idle and mobile buffer',()=>{
  for(const file of pages)for(const width of [320,360,390,430,768,1024,1440,1920]){
@@ -205,4 +205,48 @@ test('All historical formations run independently; pointer, menu focus and dynam
  doc.querySelector('[data-pain="atendimento"]').click();env.flush(50);assert.equal(doc.querySelector('#dores').dataset.formation,'desk');
  const button=doc.querySelector('.nx-menu-btn');button.click();assert.equal(doc.querySelector('#menu').inert,false);assert.equal(doc.activeElement,doc.querySelector('#menu a'));
  env.event('keydown',{key:'Escape'});assert.equal(doc.activeElement,button);assert.equal(doc.querySelector('#menu').inert,true);
+});
+test('V7: card groups use native buttons, keyboard toggles and readable controlled backs',()=>{
+ const expected=[['index.html',9],['linha-de-frente/index.html',7],['balcao-digital/index.html',8]];
+ for(const [file,count] of expected){const env=app({},file),doc=env.document,cards=doc.querySelectorAll('[data-flip]');assert.equal(cards.length,count);
+  for(const button of cards){assert.equal(button.tagName,'BUTTON');const panel=doc.querySelector('#'+button.getAttribute('aria-controls'));assert.ok(panel.textContent.trim().length>20);assert.equal(panel.hidden,true);
+   button.focus();button.pressKey('Enter');assert.equal(button.getAttribute('aria-pressed'),'true');assert.equal(panel.hidden,false);assert.equal(doc.activeElement,button);
+   button.pressKey(' ');assert.equal(button.getAttribute('aria-pressed'),'false');assert.equal(panel.hidden,true);assert.equal(doc.activeElement,button);
+   button.dispatchEvent({type:'pointerenter',pointerType:'mouse',target:button});assert.equal(button.getAttribute('aria-pressed'),'false');
+  }
+ }
+});
+test('V7: reduced-motion cards have no 3D, no field pulse and immediate chat responses',()=>{
+ const env=app({reduced:true},'balcao-digital/index.html',true),doc=env.document;
+ const button=doc.querySelector('[data-flip]');button.focus();button.pressKey('Enter');assert.equal(button.getAttribute('aria-pressed'),'true');assert.equal(env.window.NEXUS.field.pulse(button,'card-open'),false);
+ doc.querySelector('[data-chat-choice="3"]').click();assert.equal(doc.querySelector('[data-chat-typing]').hidden,true);assert.match(doc.querySelector('[data-chat-log]').textContent,/Não tenho essa informação/);
+ const css=fs.readFileSync(path.join(root,'css/v7.css'),'utf8');assert.match(css,/@media\(prefers-reduced-motion:reduce\)[\s\S]*?perspective:none[\s\S]*?transform:none !important/);assert.match(css,/\.nx-flip-back\[hidden\][^{]*\{[^}]*display:block !important[^}]*visibility:hidden/);
+});
+test('V7: home shows two framed windows on desktop and tabs on mobile',()=>{
+ for(const width of [360,768,1440]){const env=app({width}),doc=env.document;assert.equal(doc.querySelectorAll('.nx-window-bar').length,2);
+  assert.equal(doc.querySelector('[data-demo-panel="lf"]').hidden,false);assert.equal(doc.querySelector('[data-demo-panel="bd"]').hidden,width<768);
+  doc.querySelector('[data-demo-tab="bd"]').click();assert.equal(doc.querySelector('[data-demo-panel="lf"]').hidden,width<768);assert.equal(doc.querySelector('[data-demo-panel="bd"]').hidden,false);
+ }
+});
+test('V7: LF window advances by scroll only after starting on desktop, preserving control focus',()=>{
+ for(const options of [{width:1440},{width:360},{width:1440,reduced:true}]){
+  const env=app(options),doc=env.document,demo=doc.querySelector('[data-demo-lf]');demo._rect={left:40,top:0,width:700,height:2500};
+  env.scrollTo(100);assert.match(doc.querySelector('[data-lf-output]').textContent,/Conheça o percurso/);
+  const start=doc.querySelector('[data-lf-start]');start.focus();start.click();const next=doc.querySelector('[data-lf-next]');assert.equal(doc.activeElement,next);
+  env.scrollTo(100+env.height*.36);assert.match(doc.querySelector('[data-lf-output]').textContent,options.width>=1024&&!options.reduced?/2 \/ 4/:/1 \/ 4/);
+  if(options.width>=1024&&!options.reduced){env.scrollTo(100+env.height*1.1);assert.match(doc.querySelector('[data-lf-output]').textContent,/Reunião agendada/);assert.equal(doc.activeElement,doc.querySelector('[data-lf-reset]'));}
+ }
+});
+test('V7: messenger typing is finite, consults fictional property data and cancels old responses',()=>{
+ const env=app({},'balcao-digital/index.html'),doc=env.document,button=doc.querySelector('[data-chat-choice="0"]');button.focus();button.click();
+ assert.equal(doc.querySelector('[data-chat-typing]').hidden,false);assert.equal(doc.querySelector('[data-chat-log]').getAttribute('aria-busy'),'true');
+ env.advanceTime(420);assert.equal(doc.querySelector('[data-chat-typing]').hidden,true);assert.equal(doc.activeElement,button);assert.equal(doc.querySelectorAll('.nx-property-result').length,1);assert.equal(doc.querySelector('[data-chat-consultation]').querySelectorAll('li').length,4);
+ doc.querySelector('[data-chat-choice="1"]').click();doc.querySelector('[data-chat-choice="3"]').click();env.advanceTime(500);
+ assert.equal(doc.querySelectorAll('.nx-property-result').length,0);assert.match(doc.querySelector('[data-chat-log]').textContent,/Não tenho essa informação/);assert.match(doc.querySelector('[data-chat-consultation]').textContent,/Encaminhamento humano/);
+});
+test('V7: UI-field bridge safely degrades and live pulses stop after their bounded duration',()=>{
+ for(const options of [{noCanvas:true},{reduced:true}]){const env=app(options,'index.html',true);const button=env.document.querySelector('[data-flip]');assert.equal(env.window.NEXUS.field.pulse(button),false);button.click();assert.equal(button.getAttribute('aria-pressed'),'true');}
+ const env=app({width:1440},'index.html',true);env.flush(160);assert.equal(env.window.NEXUS_DEBUG.idle,true);
+ assert.equal(env.window.NEXUS.field.pulse(null),false);assert.equal(env.window.NEXUS.field.pulse(env.document.querySelector('[data-flip]'),'card-open'),true);env.flush(90);assert.equal(env.window.NEXUS_DEBUG.idle,true);assert.ok([...env.window.NEXUS_DEBUG.X,...env.window.NEXUS_DEBUG.Y].every(Number.isFinite));
+ const missing=environment(markup('index.html').replace(/<canvas[^>]*><\/canvas>/,''));for(const name of ['whatsapp','consent','track','content','experience','interactions'])missing.run(source(name));const card=missing.document.querySelector('[data-flip]');assert.equal(missing.window.NEXUS.field.pulse(card),false);card.pressKey('Enter');assert.equal(card.getAttribute('aria-pressed'),'true');
 });

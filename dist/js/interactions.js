@@ -35,6 +35,12 @@
   const reduce = reduceMQ.matches;
   const finePointer = matchMedia('(hover:hover) and (pointer:fine)').matches;
   const DEBUG = /[?&]nxdebug\b/.test(location.search);
+  window.NEXUS = window.NEXUS || {};
+  window.NEXUS.field = Object.freeze({pulse(el,kind='component') {
+    if(reduce || !root.classList.contains('nx-live') || !el || !el.isConnected || typeof el.getBoundingClientRect!=='function') return false;
+    window.dispatchEvent(new CustomEvent('nx:signal',{detail:{el,kind}}));
+    return true;
+  }});
 
   /* ═════════════════════ UI básica (sempre ativa) ═════════════════════ */
 
@@ -116,6 +122,8 @@
   const foc = { x: 0, y: 0, s: 0, tgt: 0 };
   const sel = { x: 0, y: 0, s: 0, tgt: 0 };
   const ripples = [];
+  let componentSignal = null;
+  let narrativeBusy = false;
   const magnets = [];
 
   /* ═════════════════════ Cenas e medição ═════════════════════ */
@@ -1114,11 +1122,20 @@
 
   // Product narratives use the existing node field, edge and pulse primitives.
   // q stays deterministic and reversible; interactive demos may set a discrete step.
+  function narrativeProgress(scene,q) {
+    const requested=scene && Number(scene.el.dataset.narrativeStep);
+    if(!scene || !scene.el.hasAttribute('data-narrative-step') || !Number.isFinite(requested))return hq(q);
+    const target=clamp(requested),now=performance.now();
+    const dt=Math.min(64,Math.max(1,now-(scene.componentTime||now-16)));
+    const previous=scene.componentProgress===undefined?hq(q):scene.componentProgress;
+    const next=mix(previous,target,1-Math.exp(-dt/90));
+    scene.componentProgress=Math.abs(target-next)<.001?target:next;scene.componentTime=now;
+    if(scene.componentProgress!==target)narrativeBusy=true;
+    return scene.componentProgress;
+  }
   function buildProspect(F, q, scene) {
     fillLoose(F);
-    const requested = scene && Number(scene.el.dataset.narrativeStep);
-    const p = scene && scene.el.hasAttribute('data-narrative-step') && Number.isFinite(requested)
-      ? clamp(requested) : hq(q);
+    const p = narrativeProgress(scene,q);
     const identify = sstep(.02,.22,p), connect = sstep(.20,.44,p);
     const converse = sstep(.43,.69,p), meeting = sstep(.70,.98,p);
     const cx = V.cx, cy = V.cy, width = V.w * .82, height = V.h * .65;
@@ -1142,9 +1159,7 @@
 
   function buildDesk(F,q,scene) {
     fillLoose(F);
-    const requested=scene && Number(scene.el.dataset.narrativeStep);
-    const p=scene && scene.el.hasAttribute('data-narrative-step') && Number.isFinite(requested)
-      ? clamp(requested) : hq(q);
+    const p=narrativeProgress(scene,q);
     const cx=V.cx,cy=V.cy, span=V.w*.78;
     const formed=sstep(0,.24,p), queried=sstep(.27,.60,p), routed=sstep(.62,1,p);
     for(let group=0;group<5;group++) {
@@ -1162,9 +1177,9 @@
     pulse(F,j=>j*6,5,p*2.6,formed*.8,.2);
   }
 
-  function buildMethod(F,q) {
+  function buildMethod(F,q,scene) {
     fillLoose(F);
-    const p=hq(q), formed=sstep(0,.16,p);
+    const p=narrativeProgress(scene,q), formed=sstep(0,.16,p);
     for(let step=0;step<5;step++) {
       const cx=V.cx+(step/4-.5)*V.w*.8;
       const cy=V.cy+Math.sin(step*.8)*V.h*.16;
@@ -1181,10 +1196,31 @@
     pulse(F,j=>j*6,5,p*1.3,formed*.65,.2);
   }
 
+  function buildFrame(F,q,scene) {
+    if(W<1024) return ({hero:buildHero,difference:buildDifference,contact:buildContact}[scene.id] || buildAbout)(F,q,scene);
+    fillLoose(F);
+    const r=rectAt(scene.content),cx=W*.5,cy=r.top+r.height*.5;
+    const rx=W*.48,ry=Math.max(H*.35,r.height*.5+64),half=Math.ceil(N/2);
+    for(let i=0;i<N;i++) {
+      const ringId=i<half?0:1,j=i%half,n=ringId?N-half:half;
+      const a=j/Math.max(1,n)*TAU+q*.16+ringId*.06;
+      const size=ringId?1.025:1;
+      F.x[i]=cx+Math.cos(a)*rx*size;F.y[i]=cy+Math.sin(a)*ry*size;
+      F.m[i]=.85;F.g[i]=.12+scene.tx.heat*.25;
+      if(j && i<half)edge(F,i-1,i,.45,0,scene.tx.heat*.4,j/half);
+    }
+    pulse(F,j=>j,half,q*1.5,.35,.15);
+  }
   const builders = Object.freeze({hero:buildHero,context:buildJourney,process:buildProcess,
     fit:buildFit,difference:buildDifference,result:buildResult,about:buildAbout,contact:buildContact,
-    prospect:buildProspect,desk:buildDesk,method:buildMethod});
+    prospect:buildProspect,desk:buildDesk,method:buildMethod,frame:buildFrame});
   const builderFor = id => Object.prototype.hasOwnProperty.call(builders, id) ? builders[id] : fillLoose;
+  function buildScene(F,scene) {
+    const side=scene.el.dataset.fieldSide,previous=V.cx,previousW=V.w;
+    if(W>=1024 && side){V.cx=W*(side==='left'?.24:.76);V.w=W*.36;}
+    builderFor(scene.el.dataset.formation || scene.formation)(F,scene.q,scene);
+    V.cx=previous;V.w=previousW;
+  }
 
   /* ─── Composição: voo entre formações ─── */
 
@@ -1517,6 +1553,19 @@
   function drawInteraction(now) {
     linkSource(ptr.x, ptr.y, ptr.s, SIG.pe);
     if (foc.s > 0.05) linkSource(foc.x, foc.y, foc.s, 0.6);
+    if(componentSignal) {
+      const age=now-componentSignal.started;
+      if(age>=1000 || !componentSignal.el.isConnected)componentSignal=null;
+      else {
+        const sx=componentSignal.x,sy_=componentSignal.documentY-scrollY;
+        let closest=0,best=Infinity;
+        for(let i=0;i<N;i++){const d=Math.hypot(X[i]-sx,Y[i]-sy_);if(d<best){best=d;closest=i;}}
+        const progress=clamp(age/1000),alpha=Math.sin(progress*Math.PI)*.75;
+        ctx.strokeStyle='rgb(32,214,231)';ctx.lineWidth=1;ctx.globalAlpha=alpha;
+        ctx.beginPath();ctx.moveTo(X[closest],Y[closest]);ctx.lineTo(sx,sy_);ctx.stroke();
+        ctx.beginPath();ctx.arc(mix(X[closest],sx,progress),mix(Y[closest],sy_,progress),2.6,0,TAU);ctx.fillStyle='rgb(248,250,252)';ctx.fill();ctx.globalAlpha=1;
+      }
+    }
     for (let i = ripples.length - 1; i >= 0; i--) {
       const r = ripples[i], age = now - r.t0;
       if (age > 900) { ripples.splice(i, 1); continue; }
@@ -1701,9 +1750,10 @@
 
     // 3c. campo narrativo: formações por cena → voo → reação aos sinais → desenho
     computeLoose();
+    narrativeBusy=false;
     const sA = scenes[si], sB = st > 0 ? scenes[Math.min(NS - 1, si + 1)] : null;
-    builderFor(sA.el.dataset.formation || sA.formation)(FA, sA.q, sA);
-    if (sB) builderFor(sB.el.dataset.formation || sB.formation)(FB, sB.q, sB);
+    buildScene(FA,sA);
+    if (sB) buildScene(FB,sB);
     compose(st, FA, sB ? FB : null);
     react(now);
     const aOpacity=sA.formation==='about'?.42:1, bOpacity=sB&&sB.formation==='about'?.42:1;
@@ -1744,7 +1794,7 @@
     const busy = Math.abs(ty - sy) > 0.01 || SIG.e > 0 || SIG.v !== 0 || SIG.pe > 0 || SIG.lagBusy > 0.08 ||
       Math.abs(ptr.x - ptr.tx) > 0.4 || Math.abs(ptr.y - ptr.ty) > 0.4 ||
       Math.abs(ptr.s - (ptr.on ? 1 : 0)) > 0.01 || Math.abs(foc.s - foc.tgt) > 0.01 || Math.abs(sel.s - sel.tgt) > 0.01 ||
-      ripples.length > 0 || intro < 1 || magBusy;
+      ripples.length > 0 || componentSignal !== null || narrativeBusy || intro < 1 || magBusy;
     frameCost = frameCost * .9 + (performance.now() - frameStart) * .1;
     if (busy) raf = requestAnimationFrame(frame);
     else lastT = 0;
@@ -1771,6 +1821,12 @@
   addEventListener('pageshow', () => { layoutDirty = true; lastT = 0; kick(); });
   addEventListener('load', () => { layoutDirty = true; kick(); });
   addEventListener('nexus:narrative', () => { layoutDirty = true; kick(); });
+  addEventListener('nx:signal',event=>{
+    const el=event.detail && event.detail.el;
+    if(!el || !el.isConnected || typeof el.getBoundingClientRect!=='function')return;
+    const r=el.getBoundingClientRect();
+    componentSignal={el,kind:event.detail.kind,x:r.right-20,documentY:r.top+scrollY+22,started:performance.now()};kick();
+  });
   document.addEventListener('toggle', () => { layoutDirty = true; kick(); }, true);
 
   // IntersectionObserver: estados de seção e economia de escrita em estilos
@@ -1810,6 +1866,7 @@
     if (!t || !t.matches || !t.matches('a, button')) return;
     const r = t.getBoundingClientRect();
     foc.x = r.left + r.width / 2; foc.y = r.top + r.height / 2; foc.tgt = 1; kick();
+    if(t.matches('.nx-cta'))window.NEXUS.field.pulse(t,'cta-focus');
   });
   document.addEventListener('focusout', () => { foc.tgt = 0; kick(); });
 

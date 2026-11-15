@@ -1,4 +1,4 @@
-/* Copy V6 + delta LF, only fictional demo content. */
+/* Approved copy and fictional local demonstrations. */
 window.NEXUS.content = {
   "lfSteps": [
     {
@@ -53,11 +53,15 @@ window.NEXUS.content = {
       "tag": "Opt-out em toda mensagem"
     },
     {
-      "title": "Resposta e WhatsApp",
+      "title": "Resposta",
+      "body": "Pode ser. Hoje fazemos tudo com um escritório externo, mas está apertado.",
+      "speaker": "Marina · contato fictício"
+    },
+    {
+      "title": "Para o WhatsApp",
       "body": "Marina, para ficar mais ágil, podemos continuar pelo WhatsApp? Me passa o melhor número, por favor.",
       "reply": "Claro, é este: (xx) xxxxx-xxxx.",
-      "tag": "A conversa passa a acontecer no WhatsApp com a autorização da pessoa.",
-      "preface": "Pode ser. Hoje fazemos tudo com um escritório externo, mas está apertado."
+      "tag": "A conversa passa a acontecer no WhatsApp com a autorização da pessoa."
     },
     {
       "title": "Reunião agendada",

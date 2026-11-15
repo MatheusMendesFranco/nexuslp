@@ -44,6 +44,8 @@ class Node {
   addEventListener(type,fn){(this.listeners[type]||=[]).push(fn);}
   dispatchEvent(e){e.target ||= this;for(const fn of this.listeners[e.type]||[])fn(e);if(e.bubbles!==false&&this.parentElement)this.parentElement.dispatchEvent(e);return true;}
   click(){this.dispatchEvent({type:'click',target:this,preventDefault(){}});}
+  // Emulate native button activation, not a custom application key handler.
+  pressKey(key){this.dispatchEvent({type:'keydown',key,target:this,preventDefault(){}});if(this.tagName==='BUTTON'&&(key==='Enter'||key===' '))this.click();this.dispatchEvent({type:'keyup',key,target:this,preventDefault(){}});}
   focus(){if(!this.closest('[hidden]'))this.ownerDocument.activeElement=this;}
   showModal(){this.open=true;this.querySelector('button')?.focus();}
   close(){this.open=false;this.dispatchEvent({type:'close',bubbles:false});}
