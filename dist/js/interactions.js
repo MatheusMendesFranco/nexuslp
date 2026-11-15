@@ -10,7 +10,7 @@
  *                do scroll e acende por proximidade do cursor; paralaxe em camadas; CTA reage ao cursor
  *        campo   a MESMA matéria (glifos/nós) assume uma formação por cena; entre cenas sai da estrutura,
  *                voa em arco e forma a próxima. Reage a SIG: inércia por profundidade e elasticidade (scroll),
- *                lente + conexões ligadas ao cursor, arestas que se acendem com a energia da rolagem
+ *                lente e brilho dos nós perto do cursor, arestas que se acendem com a energia da rolagem
  *
  * Posições são função determinística do scroll (voltar a rolagem desfaz exatamente o que foi feito).
  * Eventos só atualizam alvos; o desenho acontece em requestAnimationFrame e para quando nada muda.
@@ -35,6 +35,12 @@
   const reduce = reduceMQ.matches;
   const finePointer = matchMedia('(hover:hover) and (pointer:fine)').matches;
   const DEBUG = /[?&]nxdebug\b/.test(location.search);
+  window.NEXUS = window.NEXUS || {};
+  window.NEXUS.field = Object.freeze({pulse(el) {
+    if(reduce || !root.classList.contains('nx-live') || !el || !el.isConnected || typeof el.getBoundingClientRect!=='function') return false;
+    window.dispatchEvent(new CustomEvent('nx:signal',{detail:{el}}));
+    return true;
+  }});
 
   /* ═════════════════════ UI básica (sempre ativa) ═════════════════════ */
 
@@ -44,7 +50,9 @@
     const main = $('#conteudo');
     const footer = $('.nx-footer');
     if (!btn || !menu) return;
+    menu.inert = true;
     const set = open => {
+      menu.inert = !open;
       menu.classList.toggle('is-open', open);
       root.classList.toggle('nx-menu-open', open);
       btn.setAttribute('aria-expanded', String(open));
@@ -113,7 +121,7 @@
   const ptr = { on: false, tx: 0, ty: 0, x: 0, y: 0, nx: 0.5, ny: 0.5, s: 0 };
   const foc = { x: 0, y: 0, s: 0, tgt: 0 };
   const sel = { x: 0, y: 0, s: 0, tgt: 0 };
-  const ripples = [];
+  let narrativeBusy = false;
   const magnets = [];
 
   /* ═════════════════════ Cenas e medição ═════════════════════ */
@@ -146,7 +154,7 @@
   const scenes = $$('[data-scene]').map((el, i) => {
     const content = $('.nx-scene-content', el) || el;
     const sc = {
-      el, content, i, id: el.dataset.scene, stage: el.hasAttribute('data-stage'), flow: el.hasAttribute('data-flow'),
+      el, content, i, id: el.dataset.scene, formation: el.dataset.formation || el.dataset.scene, stage: el.hasAttribute('data-stage'), flow: el.hasAttribute('data-flow'),
       a: 0, b: 0, lo: 0, hi: 0, q: 0, vis: i === 0,
       tx: { heat: 0, born: 0, leave: 0 },
       reveals: [], grads: [], words: [], ctas: [], anchor: null, kq: {}, ctaNear: 0,
@@ -175,6 +183,7 @@
     return sc;
   });
   const NS = scenes.length;
+  if (!NS) { root.classList.remove('nx-live'); return; }
   const byId = Object.fromEntries(scenes.map(s => [s.id, s]));
 
   // Rectangles are measured only after resize/font/layout changes. Scroll and
@@ -335,7 +344,9 @@
 
       for (const r of sc.reveals) updateReveal(r);
       for (const step of sc.steps) {
-        const v = sstep(.25 + step.index * .075, .46 + step.index * .075, q);
+        const v = sc.formation === 'method'
+          ? sstep(.18 + step.index * .15, .33 + step.index * .15, q)
+          : sstep(.25 + step.index * .075, .46 + step.index * .075, q);
         if (Math.abs(v-step.value)>.004) { step.value=v; step.el.style.setProperty('--step-active',v.toFixed(3)); }
       }
 
@@ -351,7 +362,7 @@
       }
       if (!sc.anchorGrad) sc.tx.heat = heat;
 
-      if (sc.id === 'process') updateWords(sc, hq(q) * 4);
+      if (sc.words.length) updateWords(sc, hq(q) * 4);
 
       if (sc.ctas.length) {
         const x = (sc.id === 'contact' ? mix(-18, 100, sstep(0.5, 0.95, q)) : mix(0, 70, q)) + (ptr.nx - 0.5) * 24 * sc.ctaNear;
@@ -704,9 +715,9 @@
   };
   const anchors = {};
 
-  function buildHero(F, q) {
+  function buildHero(F, q, scene) {
     fillLoose(F);
-    const h = .09 + .91 * hq(q), tx = byId.hero.tx, H0 = T.hero, Mh = H0.M;
+    const h = .09 + .91 * hq(q), tx = scene ? scene.tx : {heat:0,born:0,leave:0}, H0 = T.hero, Mh = H0.M;
     const th = (h - 0.5) * 0.5, cs = Math.cos(th), breath = 1 + 0.03 * Math.sin(h * 5);
     const hot = tx.heat, front = tx.born;
     for (let j = 0; j < Mh; j++) {
@@ -735,9 +746,9 @@
     }
   }
 
-  function buildContext(F, q) {
+  function buildContext(F, q, scene) {
     fillLoose(F);
-    const C = T.ctx, tx = byId.context.tx;
+    const C = T.ctx, tx = scene ? scene.tx : {heat:0,born:0,leave:0};
     const coreW0 = sstep(0.32, 0.46, q);
     const att = [];
     for (let k = 0; k < CT.length; k++) {
@@ -901,9 +912,9 @@
     for (let i = 0; i < src.nr; i++) { const r = src.rg[i]; ring(dst, r.x, r.y, r.rx, r.ry, r.rot, r.a); }
   }
 
-  function buildFit(F, q) {
+  function buildFit(F, q, scene) {
     fillLoose(F);
-    const FT = T.fit, tx = byId.fit.tx;
+    const FT = T.fit, tx = scene ? scene.tx : {heat:0,born:0,leave:0};
     const fit = sstep(0.06, 0.4, q) * (1 - sstep(0.66, 0.92, q));
     const cx = V.cx, cy = V.cy;
     const rxB = V.w * 0.5, ryB = V.h * 0.5 * 0.7;
@@ -941,9 +952,9 @@
     }
   }
 
-  function buildResult(F, q) {
+  function buildResult(F, q, scene) {
     fillLoose(F);
-    const R = T.res, tx = byId.result.tx;
+    const R = T.res, tx = scene ? scene.tx : {heat:0,born:0,leave:0};
     const org = sstep(0.06, 0.42, q);
     const x0 = mob ? W * 0.06 : W * 0.33, x1 = mob ? W * 0.94 : W * 0.95;
     const sp = V.h * (mob ? 0.16 : 0.17), cy = V.cy;
@@ -981,9 +992,9 @@
     }
   }
 
-  function buildContact(F, q) {
+  function buildContact(F, q, scene) {
     fillLoose(F);
-    const C = T.con, h = hq(q), tx = byId.contact.tx;
+    const C = T.con, h = hq(q), tx = scene ? scene.tx : {heat:0,born:0,leave:0};
     const cta = anchors.cta || { x: V.cx, y: V.cy, w: 280, h: 52 };
     // anéis de espaçamento aditivo (halo), contidos pela margem esquerda da página
     const room = Math.max(cta.w * 0.5 + 14, cta.x - 10);
@@ -1034,7 +1045,7 @@
 
   // Tool and execution: two independent tracks progressively connect, sharing
   // the same nodes and scroll energy as the rest of the page.
-  function buildDifference(F, q) {
+  function buildDifference(F, q, scene) {
     fillLoose(F);
     const count = 18, formed = sstep(.06, .33, q), linked = sstep(.26, .72, q);
     const cx = mob ? W * .81 : W * .80;
@@ -1053,10 +1064,10 @@
       }
       pulse(F, j => track * count + j, count, q * 2.2 + track * (1-linked) * .35, formed * .5);
     }
-    if (anchors.difference && byId.difference.tx.heat > .05) {
+    if (anchors.difference && (scene ? scene.tx.heat : 0) > .05) {
       const t = tracer(F); t.sp = anchors.difference; t.ep = {x:cx,y:cy};
       t.bend = .12; t.u = sstep(.36,.88,q); t.tail = .18;
-      t.a = byId.difference.tx.heat * .6;
+      t.a = (scene ? scene.tx.heat : 0) * .6;
     }
   }
 
@@ -1083,8 +1094,8 @@
     }
   }
 
-  function buildJourney(F,q) {
-    buildContext(F,q);
+  function buildJourney(F,q,scene) {
+    buildContext(F,q,scene);
     const org = sstep(.18,.66,q), count=6;
     const left = mob ? W*.79 : W*.72, span=mob ? W*.13 : W*.24;
     const baseY = mob ? H*.68 : H*.48;
@@ -1107,7 +1118,107 @@
     pulse(F,j=>j*count,5,q*2.2,org*.7,.18);
   }
 
-  const builderFor = id => ({ hero: buildHero, context: buildJourney, process: buildProcess, fit: buildFit, difference: buildDifference, result: buildResult, about: buildAbout, contact: buildContact }[id]);
+  // Product narratives use the existing node field, edge and pulse primitives.
+  // q stays deterministic and reversible; interactive demos may set a discrete step.
+  function narrativeProgress(scene,q) {
+    const requested=scene && Number(scene.el.dataset.narrativeStep);
+    if(!scene || !scene.el.hasAttribute('data-narrative-step') || !Number.isFinite(requested))return hq(q);
+    const target=clamp(requested),now=performance.now();
+    const dt=Math.min(64,Math.max(1,now-(scene.componentTime||now-16)));
+    const previous=scene.componentProgress===undefined?hq(q):scene.componentProgress;
+    const next=mix(previous,target,1-Math.exp(-dt/90));
+    scene.componentProgress=Math.abs(target-next)<.001?target:next;scene.componentTime=now;
+    if(scene.componentProgress!==target)narrativeBusy=true;
+    return scene.componentProgress;
+  }
+  function buildProspect(F, q, scene) {
+    fillLoose(F);
+    const p = narrativeProgress(scene,q);
+    const identify = sstep(.02,.22,p), connect = sstep(.20,.44,p);
+    const converse = sstep(.43,.69,p), meeting = sstep(.70,.98,p);
+    const cx = V.cx, cy = V.cy, width = V.w * .82, height = V.h * .65;
+    const count = Math.min(36,N);
+    for(let i=0;i<count;i++) {
+      const group=Math.floor(i/6), row=i%6, selected=row<3;
+      const gx=cx+(group/5-.5)*width, gy=cy+(row/5-.5)*height;
+      const targetX=cx-width*.35+group*width*.14;
+      const targetY=cy+Math.sin(group*.7)*height*.15+(row-2.5)*height*.04*(1-meeting);
+      const assembled=selected ? identify : identify*.24;
+      F.x[i]=mix(lx[i],mix(gx,targetX,connect),assembled);
+      F.y[i]=mix(ly[i],mix(gy,targetY,connect),assembled);
+      F.m[i]=selected ? .35+.65*identify : .12*(1-converse);
+      F.g[i]=selected ? identify*(.25+converse*.5+meeting*.25) : .04;
+      if(selected && row>0) edge(F,group*6,i,connect*.6,0,converse,.1+group*.12);
+    }
+    for(let j=0;j<5;j++) edge(F,j*6,(j+1)*6,connect*.8,1,converse,j/5);
+    ring(F,cx+width*.35,cy,height*.14,height*.14,0,meeting*.32);
+    pulse(F,j=>j*6,6,p*2.3,connect*.75,.18);
+  }
+
+  function buildDesk(F,q,scene) {
+    fillLoose(F);
+    const p=narrativeProgress(scene,q);
+    const cx=V.cx,cy=V.cy, span=V.w*.78;
+    const formed=sstep(0,.24,p), queried=sstep(.27,.60,p), routed=sstep(.62,1,p);
+    for(let group=0;group<5;group++) {
+      for(let k=0;k<6;k++) {
+        const i=group*6+k, theta=k*TAU/6;
+        const x=cx+(group/4-.5)*span+Math.cos(theta)*V.w*.035;
+        const y=cy+Math.sin(theta)*V.h*.08+(group===4?(k<3?-1:1)*routed*V.h*.16:0);
+        F.x[i]=mix(lx[i],x,formed); F.y[i]=mix(ly[i],y,formed);
+        F.m[i]=.2+.8*formed; F.g[i]=formed*(.16+queried*.55);
+        if(k) edge(F,group*6,i,formed*.35,0,queried,group/5);
+      }
+      if(group<4) edge(F,group*6,(group+1)*6,formed*.7,1,queried,group/5);
+    }
+    ring(F,cx,cy,V.w*.12,V.h*.19,0,queried*.2);
+    pulse(F,j=>j*6,5,p*2.6,formed*.8,.2);
+  }
+
+  function buildMethod(F,q,scene) {
+    fillLoose(F);
+    const p=narrativeProgress(scene,q), formed=sstep(0,.16,p);
+    for(let step=0;step<5;step++) {
+      const cx=V.cx+(step/4-.5)*V.w*.8;
+      const cy=V.cy+Math.sin(step*.8)*V.h*.16;
+      const active=sstep(step*.16,step*.16+.24,p);
+      for(let k=0;k<6;k++) {
+        const i=step*6+k, theta=k*TAU/6;
+        F.x[i]=mix(lx[i],cx+Math.cos(theta)*(k?V.w*.035:0),formed);
+        F.y[i]=mix(ly[i],cy+Math.sin(theta)*(k?V.h*.05:0),formed);
+        F.m[i]=formed*(.3+.7*active); F.g[i]=active;
+        if(k) edge(F,step*6,i,active*.45,0,active,step/5);
+      }
+      if(step) edge(F,(step-1)*6,step*6,active*.85,1,active,step/5);
+    }
+    pulse(F,j=>j*6,5,p*1.3,formed*.65,.2);
+  }
+
+  function buildFrame(F,q,scene) {
+    if(W<1024) return ({hero:buildHero,difference:buildDifference,contact:buildContact}[scene.id] || buildAbout)(F,q,scene);
+    fillLoose(F);
+    const r=rectAt(scene.content),cx=W*.5,cy=r.top+r.height*.5;
+    const rx=W*.48,ry=Math.max(H*.35,r.height*.5+64),half=Math.ceil(N/2);
+    for(let i=0;i<N;i++) {
+      const ringId=i<half?0:1,j=i%half,n=ringId?N-half:half;
+      const a=j/Math.max(1,n)*TAU+q*.16+ringId*.06;
+      const size=ringId?1.025:1;
+      F.x[i]=cx+Math.cos(a)*rx*size;F.y[i]=cy+Math.sin(a)*ry*size;
+      F.m[i]=.85;F.g[i]=.12+scene.tx.heat*.25;
+      if(j && i<half)edge(F,i-1,i,.45,0,scene.tx.heat*.4,j/half);
+    }
+    pulse(F,j=>j,half,q*1.5,.35,.15);
+  }
+  const builders = Object.freeze({hero:buildHero,context:buildJourney,process:buildProcess,
+    fit:buildFit,difference:buildDifference,result:buildResult,about:buildAbout,contact:buildContact,
+    prospect:buildProspect,desk:buildDesk,method:buildMethod,frame:buildFrame});
+  const builderFor = id => Object.prototype.hasOwnProperty.call(builders, id) ? builders[id] : fillLoose;
+  function buildScene(F,scene) {
+    const side=scene.el.dataset.fieldSide,previous=V.cx,previousW=V.w;
+    if(W>=1024 && side){V.cx=W*(side==='left'?.24:.76);V.w=W*.36;}
+    builderFor(scene.el.dataset.formation || scene.formation)(F,scene.q,scene);
+    V.cx=previous;V.w=previousW;
+  }
 
   /* ─── Composição: voo entre formações ─── */
 
@@ -1147,9 +1258,9 @@
 
   const R_PTR = 190, R_FOC = 200, R_SEL = 230, PTR_MAX = 18;
 
-  function react(now) {
+  function react() {
     const pxn = ptr.nx - 0.5, pyn = ptr.ny - 0.5;
-    const useP = ptr.s > 0.01, useF = foc.s > 0.01, useS = sel.s > 0.01, nR = ripples.length;
+    const useP = ptr.s > 0.01, useF = foc.s > 0.01, useS = sel.s > 0.01;
     for (let i = 0; i < N; i++) {
       let x = X[i], y = Y[i];
       const d = nd.depth[i], m = M[i], member = m > 0.5;
@@ -1182,13 +1293,6 @@
         const dx = x - sel.x, dy = y - sel.y, d2 = dx * dx + dy * dy;
         if (d2 < R_SEL * R_SEL && d2 > 1) { const dd = Math.sqrt(d2), f = (1 - dd / R_SEL) ** 2 * sel.s; x -= dx / dd * 10 * f; y -= dy / dd * 10 * f; }
       }
-      // Toque / clique: onda local
-      for (let r = 0; r < nR; r++) {
-        const rp = ripples[r], age = now - rp.t0;
-        const dx = x - rp.x, dy = y - rp.y, dd = Math.hypot(dx, dy) || 1, rad = age * 0.42;
-        const w = Math.exp(-(((dd - rad) / 34) ** 2)) * (1 - age / 900);
-        if (w > 0.01) { x += dx / dd * 12 * w; y += dy / dd * 12 * w; G[i] = Math.min(1, G[i] + w * 0.6); }
-      }
       X[i] = x; Y[i] = y; PROX[i] = prox;
     }
   }
@@ -1202,14 +1306,6 @@
     g.fillStyle = gr; g.fillRect(0, 0, 48, 48);
     return s;
   });
-
-  const nearSources = [];
-  function gatherSources() {
-    nearSources.length = 0;
-    if (ptr.s > 0.02) nearSources.push([ptr.x, ptr.y, ptr.s, 170]);
-    if (foc.s > 0.02) nearSources.push([foc.x, foc.y, foc.s, 190]);
-    if (sel.s > 0.02) nearSources.push([sel.x, sel.y, sel.s, 240]);
-  }
 
   // Cores de aresta pré-computadas: [posição na paleta 0..16][calor 0..4] → "rgb(...)"; a opacidade vai por globalAlpha.
   const ECOL = Array.from({ length: 17 }, (_, pi) => Array.from({ length: 5 }, (_, hi) => {
@@ -1229,18 +1325,13 @@
       const stretch = 1 - sstep(1.22, 1.95, L / (F.er[k] + 10));
       const w = F.ew[k] * wf * stretch;
       if (w <= 0.01) continue;
-      let boost = 0;
-      if (nearSources.length) {
-        const mx = (ax + bx) * 0.5, my = (ay + by) * 0.5;
-        for (const s of nearSources) { const d = Math.hypot(mx - s[0], my - s[1]); if (d < s[3]) boost = Math.max(boost, (1 - d / s[3]) * s[2]); }
-      }
-      const eh = clamp(F.eh[k] * wf + boost * 0.55 + SIG.e * 0.42 * wf);
+      const eh = clamp(F.eh[k] * wf + SIG.e * 0.42 * wf);
       const hi = Math.round(eh * 4);
-      const c = ECOL[Math.round(clamp(F.et[k] + boost * 0.15) * 16)][hi];
+      const c = ECOL[Math.round(clamp(F.et[k]) * 16)][hi];
       if (c !== col) { ctx.strokeStyle = c; col = c; }
       const width = 0.8 + hi * 0.175;
       if (width !== lw) { ctx.lineWidth = width; lw = width; }
-      ctx.globalAlpha = Math.min(0.9, w * (0.3 + 0.5 * eh + SIG.e * 0.18) + boost * 0.2 * w);
+      ctx.globalAlpha = Math.min(0.9, w * (0.3 + 0.5 * eh + SIG.e * 0.18));
       ctx.beginPath(); ctx.moveTo(ax, ay);
       const ek = F.ek[k];
       if (ek > 0.02) {
@@ -1371,7 +1462,7 @@
           ctx.globalAlpha = 0.5 * fs * intro; ctx.beginPath(); ctx.moveTo(grad ? (x0 + X[i]) / 2 : x0, grad ? (y0 + Y[i]) / 2 : y0); ctx.lineTo(X[i], Y[i]); ctx.stroke();
           ctx.globalAlpha = 0.55 * fs * intro; ctx.beginPath(); ctx.arc(X[i], Y[i], 1.2 + fs * 0.9, 0, TAU); ctx.fill();
         }
-        if (g > 0.2 || i < 8) { // rastro de sinal quando a matéria se move
+        if (SIG.e > 0.02 && (g > 0.2 || i < 8)) { // rastro apenas com energia de rolagem
           const dxp = X[i] - PX[i], dyp = Y[i] - PY[i], sp = Math.hypot(dxp, dyp);
           if (sp > 1.8 && sp < 180) {
             ctx.globalAlpha = Math.min(0.5, sp * 0.03 * Math.max(g, 0.4)); ctx.lineWidth = 1.2;
@@ -1414,52 +1505,6 @@
     ctx.globalAlpha = 1;
   }
 
-  /** Conexões ligadas ao cursor/foco: os nós mais próximos se conectam à fonte (alteram a “conexão” do campo). */
-  const near4 = [[0, -1], [0, -1], [0, -1], [0, -1]];
-  function linkSource(sx, sy_, strength, energy) {
-    if (strength < 0.05) return;
-    for (const n of near4) { n[0] = 0; n[1] = -1; }
-    for (let i = 0; i < N; i++) {
-      const p = PROX[i];
-      if (p < 0.06) continue;
-      let w = 0; // posição de menor proximidade entre os 4
-      for (let k = 1; k < 4; k++) if (near4[k][0] < near4[w][0]) w = k;
-      if (p > near4[w][0]) { near4[w][0] = p; near4[w][1] = i; }
-    }
-    for (const [p, i] of near4) {
-      if (i < 0) continue;
-      const a = Math.min(0.78, Math.sqrt(p) * strength * (0.62 + 0.45 * energy));
-      const gr = ctx.createLinearGradient(sx, sy_, X[i], Y[i]);
-      gr.addColorStop(0, `rgba(160,248,255,${Math.min(0.9, a * 0.9).toFixed(3)})`); // ponta clara no cursor
-      gr.addColorStop(1, `rgba(139,92,246,${Math.min(0.9, a * 1.1).toFixed(3)})`);
-      ctx.strokeStyle = gr; ctx.lineWidth = 1.15;
-      ctx.beginPath(); ctx.moveTo(sx, sy_); ctx.lineTo(X[i], Y[i]); ctx.stroke();
-    }
-  }
-
-  function drawInteraction(now) {
-    linkSource(ptr.x, ptr.y, ptr.s, SIG.pe);
-    if (foc.s > 0.05) linkSource(foc.x, foc.y, foc.s, 0.6);
-    for (let i = ripples.length - 1; i >= 0; i--) {
-      const r = ripples[i], age = now - r.t0;
-      if (age > 900) { ripples.splice(i, 1); continue; }
-      const k = 1 - age / 900;
-      const gr = ctx.createRadialGradient(r.x, r.y, Math.max(0, age * 0.42 - 6), r.x, r.y, age * 0.42 + 6);
-      gr.addColorStop(0, 'rgba(32,214,231,0)'); gr.addColorStop(0.5, `rgba(125,211,252,${(0.38 * k).toFixed(3)})`); gr.addColorStop(1, 'rgba(139,92,246,0)');
-      ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(r.x, r.y, age * 0.42 + 8, 0, TAU); ctx.fill();
-    }
-    if (sel.s > 0.03) { // seleção: sinal ligando o trecho aos nós mais próximos
-      const cx = sel.x, cy = sel.y, best = [];
-      for (let i = 0; i < N; i++) best.push([Math.hypot(X[i] - cx, Y[i] - cy), i]);
-      best.sort((a, b) => a[0] - b[0]);
-      for (let k = 0; k < 4; k++) {
-        const i = best[k][1], gr = ctx.createLinearGradient(cx, cy, X[i], Y[i]);
-        gr.addColorStop(0, `rgba(139,92,246,${(0.5 * sel.s).toFixed(3)})`); gr.addColorStop(1, `rgba(32,214,231,${(0.15 * sel.s).toFixed(3)})`);
-        ctx.strokeStyle = gr; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(X[i], Y[i]); ctx.stroke();
-      }
-    }
-  }
-
   // One signal remains between formations, crossing the lower edge of the
   // viewport. Its control point belongs to the same matter as the active scene.
   const signalPath = new Float32Array(98);
@@ -1493,10 +1538,9 @@
     ctx.globalAlpha = 1;
   }
 
-  function drawField(now) {
+  function drawField() {
     const t0 = performance.now();
     ctx.clearRect(0, 0, W, H);
-    gatherSources();
     const A = FA, B = st > 0 ? FB : null;
     const wA = B ? 1 - sstep(0, 0.35, st) : 1, wB = B ? sstep(0.65, 1, st) : 0;
     drawRings(A, wA); if (B) drawRings(B, wB);
@@ -1507,14 +1551,13 @@
     drawContinuity();
     drawScrollStreaks();
     drawNodes();
-    drawInteraction(now);
     drawCost = drawCost * 0.9 + (performance.now() - t0) * 0.1;
   }
 
   /* ═════════════════════ Loop ═════════════════════ */
 
   function readAnchors() {
-    const near = sc => sc.i === si || (st > 0 && sc.i === si + 1);
+    const near = sc => !!sc && (sc.i === si || (st > 0 && sc.i === si + 1));
     for (const sc of scenes) if(sc.anchor) anchors[sc.id]=near(sc)?textEnd(sc):null;
     if (ctaEl && near(byId.contact)) {
       const r=rectAt(ctaEl);
@@ -1538,15 +1581,16 @@
     }
   }
 
-  const ctaEl = $('[data-cta-origin="final"]');
+  const ctaEl = $('[data-final-cta]') || $('[data-cta-origin="final"]');
   let navIdx = -1;
-  const NAV_FOR = {hero:'#inicio', context:'#o-que-fazemos', process:'#como-funciona', about:'#quem-somos', contact:'#contato'};
+  const NAV_FOR = {hero:'#inicio', context:'#o-que-fazemos', process:'#como-funciona', about:'#quem-somos',
+    dores:'#dores', metodo:'#metodo', confianca:'#confianca', duvidas:'#duvidas', contact:'#contato'};
   function syncNav() {
     const idx = st > 0.5 ? Math.min(NS - 1, si + 1) : si;
     if (idx === navIdx) return;
     navIdx = idx;
     const hash = NAV_FOR[scenes[idx].id] || null;
-    $$('.nx-nav a').forEach(a => { if (a.getAttribute('href') === hash) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
+    $$('.nx-nav a[href^="#"]').forEach(a => { if (a.getAttribute('href') === hash) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
   }
 
   /** 1 — SINAIS: transforma o que o visitante faz em números contínuos (SIG). */
@@ -1623,12 +1667,13 @@
 
     // 3c. campo narrativo: formações por cena → voo → reação aos sinais → desenho
     computeLoose();
+    narrativeBusy=false;
     const sA = scenes[si], sB = st > 0 ? scenes[Math.min(NS - 1, si + 1)] : null;
-    builderFor(sA.id)(FA, sA.q);
-    if (sB) builderFor(sB.id)(FB, sB.q);
+    buildScene(FA,sA);
+    if (sB) buildScene(FB,sB);
     compose(st, FA, sB ? FB : null);
-    react(now);
-    const aOpacity=sA.id==='about'?.42:1, bOpacity=sB&&sB.id==='about'?.42:1;
+    react();
+    const aOpacity=sA.formation==='about'?.42:1, bOpacity=sB&&sB.formation==='about'?.42:1;
     const fieldOpacity=mix(aOpacity,bOpacity,smooth(st));
     if(surface===canvas && (canvas._opacity===undefined || Math.abs(canvas._opacity-fieldOpacity)>.01)) {
       canvas._opacity=fieldOpacity;canvas.style.opacity=fieldOpacity.toFixed(2);
@@ -1637,7 +1682,7 @@
     frameNo++;
     // Preserve cadence at every quality level. Reduce DPR and glyph detail
     // before sacrificing frames; the narrative remains synchronized with text.
-    drawField(now);
+    drawField();
     if(surface!==canvas) {
       // A single copy publishes the finished bitmap, including transparency.
       // The visible canvas is never cleared between draws on the mobile path.
@@ -1666,7 +1711,7 @@
     const busy = Math.abs(ty - sy) > 0.01 || SIG.e > 0 || SIG.v !== 0 || SIG.pe > 0 || SIG.lagBusy > 0.08 ||
       Math.abs(ptr.x - ptr.tx) > 0.4 || Math.abs(ptr.y - ptr.ty) > 0.4 ||
       Math.abs(ptr.s - (ptr.on ? 1 : 0)) > 0.01 || Math.abs(foc.s - foc.tgt) > 0.01 || Math.abs(sel.s - sel.tgt) > 0.01 ||
-      ripples.length > 0 || intro < 1 || magBusy;
+      narrativeBusy || intro < 1 || magBusy;
     frameCost = frameCost * .9 + (performance.now() - frameStart) * .1;
     if (busy) raf = requestAnimationFrame(frame);
     else lastT = 0;
@@ -1692,6 +1737,16 @@
   if (window.ResizeObserver) new ResizeObserver(() => { layoutDirty = true; kick(); }).observe(document.body);
   addEventListener('pageshow', () => { layoutDirty = true; lastT = 0; kick(); });
   addEventListener('load', () => { layoutDirty = true; kick(); });
+  addEventListener('nexus:narrative', () => { layoutDirty = true; kick(); });
+  addEventListener('nx:signal',event=>{
+    const el=event.detail && event.detail.el;
+    if(!el || !el.isConnected || typeof el.getBoundingClientRect!=='function')return;
+    const r=el.getBoundingClientRect();
+    // Reuse local node lens and glow, without a connector or expanding ring.
+    foc.x=r.left+r.width*.5;foc.y=r.top+Math.min(r.height*.5,120);
+    foc.s=Math.max(foc.s,.65);kick();
+  });
+  document.addEventListener('toggle', () => { layoutDirty = true; kick(); }, true);
 
   // IntersectionObserver: estados de seção e economia de escrita em estilos
   if (window.IntersectionObserver) {
@@ -1713,12 +1768,8 @@
     document.documentElement.addEventListener('pointerleave', () => { ptr.on = false; kick(); });
     addEventListener('blur', () => { ptr.on = false; kick(); });
   }
-  // Toque / clique: onda local + equivalência do hover em texto-chave
+  // Toque / clique: apenas equivalência do hover em texto-chave.
   addEventListener('pointerdown', e => {
-    if (e.pointerType !== 'touch') {           // toque no celular não gera onda: ele só inicia a rolagem
-      ripples.push({ x: e.clientX, y: e.clientY, t0: performance.now() });
-      if (ripples.length > 4) ripples.shift();
-    }
     const key = e.target.closest && e.target.closest('.nx-gradient-stack');
     if (key) { key.classList.add('is-touched'); clearTimeout(key._tt); key._tt = setTimeout(() => key.classList.remove('is-touched'), 1800); }
     kick();
@@ -1733,7 +1784,7 @@
   });
   document.addEventListener('focusout', () => { foc.tgt = 0; kick(); });
 
-  // Seleção de texto altera conexões
+  // Seleção de texto afasta suavemente os nós próximos.
   document.addEventListener('selectionchange', () => {
     const s = getSelection();
     if (!s || s.isCollapsed || !s.rangeCount) { sel.tgt = 0; kick(); return; }
@@ -1775,5 +1826,5 @@
   for (let i = 0; i < N; i++) lag[i] = sy;
   kick();
 
-  if (DEBUG) window.NEXUS_DEBUG = { ripples, magnets, SIG, X, Y, PROX, ptr, scenes, get quality() { return quality; }, get dpr() { return dpr; }, get story() { return { si, st, sy }; }, get nodes() { return N; }, get cost() { return drawCost; }, get frameCost() { return frameCost; }, get draws() { return draws; }, get frames() { return frameNo; }, get buffered() { return surface!==canvas; }, get presents() { return presents; }, get idle() { return !raf; } };
+  if (DEBUG) window.NEXUS_DEBUG = { magnets, SIG, X, Y, PROX, ptr, scenes, get quality() { return quality; }, get dpr() { return dpr; }, get story() { return { si, st, sy }; }, get nodes() { return N; }, get cost() { return drawCost; }, get frameCost() { return frameCost; }, get draws() { return draws; }, get frames() { return frameNo; }, get buffered() { return surface!==canvas; }, get presents() { return presents; }, get idle() { return !raf; } };
 })();

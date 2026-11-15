@@ -1,42 +1,72 @@
-# Nexus — Home viva refinada
+# Nexus — V6: Linha de Frente e Balcão Digital
 
-Site institucional da Nexus Soluções Digitais, com fundo animado em Canvas2D, transições ligadas à rolagem, layout responsivo e contato via WhatsApp.
+Site estático da Nexus Soluções Digitais: home, Linha de Frente, Balcão Digital
+e layout de privacidade. HTML/CSS/JS puro, fundo Canvas2D compartilhado, demos
+locais fictícias, consentimento granular e contato no WhatsApp por origem.
 
-**Site publicado:** https://nexus-home-viva-refinada.slbr-nexus.chatgpt.site
+Este checkout contém trabalho local na branch `feat/duas-ofertas-v6`. Nenhum
+deploy é necessário para abrir ou testar o código.
 
 ## Abrir localmente
 
 O projeto usa HTML, CSS e JavaScript, sem instalação de dependências ou etapa de build.
 
-1. Extraia o ZIP ou clone este repositório.
-2. Na pasta do projeto, execute:
+Na pasta do projeto:
 
 ```sh
-python3 -m http.server 8080 --directory dist
+python -m http.server 8080 --directory dist
 ```
 
-3. Abra http://localhost:8080 no navegador.
+Abra `http://localhost:8080/`, `/linha-de-frente/`, `/balcao-digital/` e
+`/privacidade/`. Os assets e links usam caminhos a partir da raiz `dist/`.
 
-Também é possível abrir `dist/index.html` diretamente para visualizar a página.
+Se o computador não tiver Python, há um servidor opcional sem dependências:
 
-## Hospedar
+```sh
+node tools/serve.cjs 8080
+```
 
-Em uma hospedagem estática, publique **o conteúdo de `dist/`** na raiz do site, mantendo as pastas `css/`, `js/` e `fonts/`. Na Hostinger, esse conteúdo vai em `public_html/`.
+Use HTTP para testar; abrir um arquivo com `file://` não resolve os caminhos
+absolutos das páginas e assets. O site servido não requer Node, Python ou build.
+
+## Verificar
+
+Com Node instalado, sem `npm install`:
+
+```sh
+node --test tests/v6.test.cjs tests/http.test.cjs
+git diff --check
+```
+
+Os testes verificam HTML/links/ARIA, mensagens do WhatsApp, consentimento,
+eventos, demos e execução do motor em DOM/Canvas simulado. O teste HTTP serve
+as quatro páginas e todos os assets referenciados. Esses testes não medem
+overflow renderizado, Web Vitals ou comportamento de um smartphone físico.
+
+## Publicação
+
+O conteúdo de `dist/` deve ser servido como raiz, incluindo as subpastas das
+páginas, `css/`, `js/` e `fonts/`. A publicação é responsabilidade do Diretor,
+mediante autorização humana. Este trabalho não faz push ou deploy.
 
 O arquivo `.openai/hosting.json` mantém a configuração e a identidade do Site original no ChatGPT. Ele não é necessário em outras hospedagens.
 
-## Estrutura
+## Estrutura e manutenção
 
-- `dist/index.html`: conteúdo, navegação, metadados e CTAs.
-- `dist/css/`: cores, tipografia, layout responsivo e estilos de animação.
-- `dist/js/interactions.js`: interatividade, formações do fundo e renderização Canvas2D.
-- `dist/fonts/`: fonte Inter local e sua licença SIL Open Font License.
-- `design/`: registros dos ajustes recentes e seus limites de verificação.
+- `dist/index.html`, `dist/linha-de-frente/index.html` e `dist/balcao-digital/index.html`: copy final com delta LF aplicado, links e marcação das interações.
+- `dist/privacidade/index.html`: inserir o fragmento no marcador `<!-- PRIVACIDADE:CONTEUDO -->`; os estilos `.nx-legal` já estão disponíveis.
+- `dist/css/variables.css`, `base.css`, `motion.css`: sistema visual existente, preservado.
+- `dist/css/v6.css`, `consent.css`: componentes e consentimento.
+- `dist/js/interactions.js`: motor e formações narrativas compartilhadas.
+- `dist/js/content.js`: textos fictícios das demos.
+- `dist/js/experience.js`: seletor de dores, demos e chat simulado.
+- `dist/js/whatsapp.js`: mensagens e URLs por origem; os links HTML já funcionam sem JavaScript.
+- `dist/js/consent.js`: escolhas e carregamento condicional do Meta Pixel.
+- `dist/js/track.js`: eventos com gate de consentimento.
+- `dist/fonts/`: fonte Inter local e licença.
+- `tests/`, `tools/serve.cjs`: QA sem dependências externas.
+- `design/V6.md`: decisões, contrato do motor e limites de validação.
 
-## Versão exportada
-
-Código da versão 5 publicada no Sites: copy revisada em linguagem simples e seção sobre a Nexus dedicada ao que entregamos. O design, as animações e a correção de renderização no smartphone foram preservados.
-
-Commit de origem: `067f70dabf78fc2501f30420d31e76c28c1078ea`.
-
-Atualizado em 20/10/2026. Os arquivos do site são idênticos aos desse commit; este README e o `.gitignore` foram acrescentados para facilitar o uso do repositório.
+Medição escreve apenas em `window.dataLayer` após autorização; nenhum provedor de
+analytics adicional está configurado. O Meta Pixel e `fbq trackCustom` dependem
+da escolha de marketing. O rodapé reabre as preferências em todas as páginas.
