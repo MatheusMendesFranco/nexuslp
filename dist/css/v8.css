@@ -26,3 +26,30 @@ body[data-product] .nx-cta:not(.nx-cta--ghost) { background:linear-gradient(115d
 [data-scene="contact"] .nx-lockup { margin-bottom:28px; }
 .nx-footer .nx-lockup-name { font-size:13px; }
 @media(max-width:1100px) and (min-width:861px) { .nx-nav { gap:16px; } }
+
+/* P2: product name and function, alongside an explicitly fictional result. */
+.nx-hero-split { display:grid; grid-template-columns:minmax(0,1fr); gap:48px; align-items:center; }
+.nx-hero-copy { min-width:0; }
+.nx-hero-copy > .nx-lockup { display:flex; width:fit-content; margin-block:24px 16px; }
+.nx-product-name { font-size:clamp(52px,9vw,132px); font-weight:600; letter-spacing:-.045em; line-height:1.02; max-width:100%; color:var(--prod-text); background:linear-gradient(115deg,var(--prod-text),var(--prod-a),var(--prod-b)); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-wrap:balance; }
+.nx-hero-product .nx-display.nx-product-claim { font-size:clamp(30px,3.1vw,46px) !important; font-weight:400; letter-spacing:-.035em; line-height:1.14; margin:24px 0 0; max-width:26ch !important; text-wrap:balance; }
+.nx-hero-product .nx-hero-copy .nx-body { font-size:17px; line-height:1.65; max-width:52ch; margin-inline:0; }
+.nx-hero-product .nx-product-role { font-size:clamp(19px,1.65vw,24px); line-height:1.35; margin-top:24px; max-width:40ch; }
+.nx-hero-product .nx-micro { margin-inline:0; }
+.nx-hero-preview { margin:0; padding-bottom:28px; }
+.nx-hero-preview > p { margin-block:20px; font-size:15px; line-height:1.7; color:var(--nx-muted); }
+.nx-hero-preview .nx-preview-title { font-size:24px; font-weight:500; letter-spacing:-.025em; line-height:1.25; margin-top:20px; }
+.nx-hero-preview .nx-label { color:var(--prod-text); font-size:11px; }
+.nx-hero-preview .nx-chat-bubble { max-width:95%; }
+.nx-hero-preview .nx-micro { font-size:12px; }
+.nx-hero-preview .nx-text-link { font-size:14px; }
+@media(min-width:1024px) {
+ .nx-hero-product .nx-hero-split { grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:clamp(32px,5vw,72px); text-align:left; }
+ .nx-hero-product .nx-hero-copy .nx-product-name { font-size:clamp(64px,7.2vw,106px); }
+ .nx-hero-product .nx-display.nx-product-claim { margin-inline:0; }
+}
+@media(max-width:767px) {
+ .nx-product-name { font-size:44px; }
+ .nx-hero-product .nx-display.nx-product-claim { font-size:30px !important; }
+ .nx-hero-product .nx-product-tag { font-size:10px; letter-spacing:.1em; }
+}

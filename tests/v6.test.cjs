@@ -19,6 +19,10 @@ test('V8.2: product identity is present in navigation, body, windows and metadat
   assert.match(doc.querySelector('.nx-product-tag').textContent,/PRODUTO NEXUS/);
   assert.ok(doc.querySelector('.nx-nav a[aria-current="page"] .nx-product-glyph'));
   assert.equal(doc.querySelector('.nx-window-bar .nx-lockup').dataset.product,code);
+  assert.equal(doc.querySelector('h1').textContent,name);
+  assert.ok(doc.querySelector('.nx-hero-split .nx-hero-copy .nx-product-role'));
+  assert.ok(doc.querySelector('.nx-hero-preview .nx-window-badge').textContent.includes('SIMULAÇÃO'));
+  assert.equal(doc.querySelectorAll('[data-demo-lf], [data-demo-chat]').length,1,'Preview must not duplicate the interactive demo');
   const live=app({storage:saved(true,false)},route+'/index.html');live.document.querySelector('[data-cta-origin="'+code+'-hero"]').click();
   assert.equal(live.window.dataLayer.find(e=>e.event==='cta_click').product,route);
  }

@@ -20,3 +20,7 @@ Estratégia de mídia: SVG inline simples para glifos; HTML semântico para simu
 ## Passo 1 — identidade
 
 Tokens LF/BD, `data-product="lf|bd"`, tags, lockups, glifos e títulos com nome do produto. Navegação, janelas e rodapés compartilham marcação. `track.js` normaliza os códigos visuais para os identificadores anteriores dos eventos; mensagens/origens de CTA permanecem intactas. Cache dos arquivos alterados renovado.
+
+## Passo 2 — heros P2
+
+Um H1 com o nome do produto, claim aprovado subordinado, descritor de função e janela ilustrativa. No desktop, composição em duas colunas; mobile empilha a janela depois do CTA. E-mail e atendimento têm identificação de simulação; a prévia leva à demo existente. Sem eventos de interação disparados na prévia estática.
