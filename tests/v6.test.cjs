@@ -20,6 +20,7 @@ test('V8.2: product identity is present in navigation, body, windows and metadat
   assert.ok(doc.querySelector('.nx-nav a[aria-current="page"] .nx-product-glyph'));
   assert.equal(doc.querySelector('.nx-window-bar .nx-lockup').dataset.product,code);
   assert.equal(doc.querySelector('h1').textContent,name);
+  assert.equal(doc.querySelector('.nx-hero-copy .nx-lockup'),null,'Product hero keeps the tag and H1 without a redundant lockup');
   assert.ok(doc.querySelector('.nx-hero-split .nx-hero-copy .nx-product-role'));
   assert.ok(doc.querySelector('.nx-hero-preview .nx-window-badge').textContent.includes('SIMULAÇÃO'));
   assert.equal(doc.querySelectorAll('[data-demo-lf], [data-demo-chat]').length,1,'Preview must not duplicate the interactive demo');

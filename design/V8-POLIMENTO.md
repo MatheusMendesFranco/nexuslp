@@ -1,0 +1,11 @@
+# V8 · Polimento
+
+Base: `e9db1f8`. Direção visual: `brief/V8-POLIMENTO.md` e as sete capturas em `brief/shots-v8/`, examinadas antes da alteração. Mantidos o sistema Nexus, as decisões da etapa 2, o Canvas e os comportamentos aprovados. Quatro itens, quatro commits locais, sem push.
+
+## 1. Hero LF / BD
+
+Removido somente o lockup pequeno da coluna de texto do hero; tag, H1 e lockup da prévia continuam. Escala do nome em 48–104 px no desktop e 40–44 px no mobile. Claim, descritor, corpo e CTA recebem espaçamentos menores, sem retirar ou encurtar a copy. Ajuste de padding superior mantém distância do header. Teste de identidade confirma ausência do lockup redundante e preserva título, prévia e CTA.
+
+### Validação renderizada
+
+Tentado `node brief/probe7.mjs nexuslp/dist v8-pol-baseline` a partir do diretório pai: falhou com `ERR_MODULE_NOT_FOUND` para `playwright`. Nenhuma dependência instalada. A disponibilidade do CTA em 1440×900 e a medição real de overflow em 360 px precisam de conferência em navegador funcional; testes de DOM/Canvas não demonstram layout CSS. Limitação registrada conforme o brief.
