@@ -68,6 +68,10 @@ test('V8.2: layout rhythm preserves facts, all persona flips and accessible FAQs
  const home=environment(markup('index.html')).document;assert.equal(home.querySelectorAll('.nx-trust.nx-bento dt').length,4);assert.match(home.querySelector('#confianca').textContent,/Você sabe com quem fala/);
  const lf=environment(markup('linha-de-frente/index.html')).document;assert.ok(lf.querySelector('.nx-operation-bento [data-flip]'));assert.ok(lf.querySelector('.nx-comparison'));
  const bd=environment(markup('balcao-digital/index.html')).document;assert.equal(bd.querySelectorAll('.nx-persona-bento [data-flip]').length,8);assert.equal(bd.querySelectorAll('.nx-fact-strip .nx-index').length,3);assert.equal(bd.querySelectorAll('.nx-comparison h3').length,2);
+ for(const button of bd.querySelectorAll('.nx-persona-bento [data-flip]')){
+  const teaser=button.querySelector('.nx-card-teaser'),panel=bd.querySelector('#'+button.getAttribute('aria-controls'));
+  assert.ok(teaser);assert.equal(teaser.textContent,panel.querySelectorAll('p')[1].textContent,'Persona preview reuses the approved description, leaving the back intact');
+ }
 });
 
 test('V8.2: preference status dismisses, restarts its timeout and is not restored on reload',()=>{

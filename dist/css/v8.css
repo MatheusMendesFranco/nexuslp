@@ -164,12 +164,11 @@ body .nx-lead { font-size:clamp(20px,2vw,28px); font-weight:400; letter-spacing:
 .nx-bento-note .nx-type-list { margin-top:16px; font-size:15px; }
 .nx-persona-cards.nx-persona-bento { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:20px; }
 .nx-persona-bento .nx-flip-card { grid-column:span 2; align-self:stretch; }
-.nx-persona-bento .nx-flip-card:first-child { grid-column:span 3; grid-row:span 2; }
-.nx-persona-bento .nx-flip-card:nth-child(2),.nx-persona-bento .nx-flip-card:nth-child(3),.nx-persona-bento .nx-flip-card:nth-child(7),.nx-persona-bento .nx-flip-card:nth-child(8) { grid-column:span 3; }
-.nx-persona-bento .nx-flip-front { min-height:200px; gap:18px; }
-.nx-persona-bento .nx-flip-card:first-child .nx-flip-front { justify-content:center; }
-.nx-persona-bento .nx-flip-card:first-child .nx-card-title { font-size:clamp(38px,4.4vw,60px); }
+.nx-persona-bento .nx-flip-card:first-child { grid-column:span 4; }
+.nx-persona-bento .nx-flip-front { min-height:0; gap:14px; justify-content:flex-start; }
+.nx-persona-bento .nx-flip-card:first-child .nx-card-title { font-size:clamp(34px,3.4vw,48px); }
 .nx-persona-bento .nx-card-title { font-size:clamp(26px,2.4vw,34px); }
+.nx-persona-bento .nx-card-teaser { font-size:14px; line-height:1.6; max-width:40ch; }
 .nx-persona-bento .nx-card-signal { display:none; }
 .nx-persona-bento .nx-card-number { color:var(--prod-text); font-size:20px; }
 /* P9: facts use a typographic strip, not another repeated card surface. */
