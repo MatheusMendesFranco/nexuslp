@@ -197,3 +197,4 @@ html:not(.js) .nx-flip-back[hidden] { visibility:visible; opacity:1; transform:n
 .nx-flip-back .nx-pain-actions .nx-text-link,.nx-flip-back .nx-pain-actions .nx-cta { margin:0; max-width:100%; }
 .nx-pain-actions .nx-text-link { gap:12px; }
 .nx-pain-actions .nx-text-link span { flex:none; }
+.nx-demo-output:focus-visible, .nx-chat-log:focus-visible { outline:2px solid var(--nx-cyan); outline-offset:2px; }
