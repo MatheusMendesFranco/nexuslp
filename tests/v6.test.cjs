@@ -9,6 +9,21 @@ const pages=['index.html','linha-de-frente/index.html','balcao-digital/index.htm
 const markup=file=>fs.readFileSync(path.join(root,file),'utf8');
 function app(options={},file='index.html',engine=false){const env=environment(markup(file),options);env.window.location.pathname=file==='index.html'?'/':'/'+file.replace('index.html','');for(const script of ['whatsapp','consent','track','content','experience',...(engine?['interactions']:[])])env.run(source(script));return env;}
 const saved=(measurement,marketing)=>JSON.stringify({version:1,measurement,marketing,updatedAt:'2026-11-14T00:00:00.000Z'});
+
+test('V8.2: product identity is present in navigation, body, windows and metadata',()=>{
+ for(const [code,route,name] of [['lf','linha-de-frente','Linha de Frente'],['bd','balcao-digital','Balcão Digital']]){
+  const doc=environment(markup(route+'/index.html')).document;
+  assert.equal(doc.body.dataset.product,code);
+  assert.ok(doc.querySelector('title').textContent.startsWith(name));
+  assert.ok(doc.querySelector('meta[property="og:title"]').getAttribute('content').startsWith(name));
+  assert.match(doc.querySelector('.nx-product-tag').textContent,/PRODUTO NEXUS/);
+  assert.ok(doc.querySelector('.nx-nav a[aria-current="page"] .nx-product-glyph'));
+  assert.equal(doc.querySelector('.nx-window-bar .nx-lockup').dataset.product,code);
+  const live=app({storage:saved(true,false)},route+'/index.html');live.document.querySelector('[data-cta-origin="'+code+'-hero"]').click();
+  assert.equal(live.window.dataLayer.find(e=>e.event==='cta_click').product,route);
+ }
+ for(const file of pages){const doc=environment(markup(file)).document;assert.equal(doc.querySelectorAll('.nx-footer .nx-lockup').length,2);}
+});
 test('4 pages: unique IDs, one H1, existing local assets/routes and ARIA references',()=>{
  for(const file of pages){const html=markup(file),env=environment(html),doc=env.document;
   assert.equal(doc.querySelectorAll('h1').length,1,file);

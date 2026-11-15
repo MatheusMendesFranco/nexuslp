@@ -42,6 +42,14 @@
   --nx-violet: #8B5CF6;
   --nx-positive: #2DD881;
 
+  /* V8: product accents; text variants meet WCAG AA on Nexus Void. */
+  --nx-lf-a: #20D6E7;
+  --nx-lf-b: #2F7BFF;
+  --nx-lf-text: #7DE8F2;
+  --nx-bd-a: #8B5CF6;
+  --nx-bd-b: #2F7BFF;
+  --nx-bd-text: #B8A5FF;
+
   /* Living gradients */
   --nx-gradient-message: linear-gradient(
     105deg,

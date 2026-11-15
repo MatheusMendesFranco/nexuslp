@@ -21,7 +21,8 @@
   document.addEventListener('click', event => {
     const cta = event.target.closest('[data-cta-origin]');
     if (!cta) return;
-    const values = {origin: cta.dataset.ctaOrigin, product: cta.dataset.product || document.body.dataset.product || ''};
+    const product = cta.dataset.product || document.body.dataset.product || '';
+    const values = {origin: cta.dataset.ctaOrigin, product: ({lf:'linha-de-frente', bd:'balcao-digital'})[product] || product};
     track('cta_click', values);
     if (cta.dataset.contact === 'whatsapp') track('whatsapp_exit', values);
   });
