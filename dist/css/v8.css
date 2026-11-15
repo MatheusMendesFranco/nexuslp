@@ -130,6 +130,7 @@ body .nx-h2 { font-size:clamp(32px,4.8vw,64px); font-weight:500; letter-spacing:
 body .nx-body { font-size:clamp(17px,1.25vw,18px); line-height:1.65; }
 body .nx-lead { font-size:clamp(20px,2vw,28px); font-weight:400; letter-spacing:-.01em; line-height:1.35; }
 .nx-section .nx-h2 { max-width:19ch; }
+.nx-section:not(.nx-example-stage) > .nx-scene-content > .nx-h2:not(.nx-legal .nx-h2) { max-width:19ch; }
 .nx-statement-band { border-block:1px solid #a8b3c726; background:linear-gradient(110deg,#0b122070,transparent); }
 .nx-statement-band .nx-chapter { margin-inline:auto; text-align:center; max-width:900px; }
 .nx-statement-band .nx-chapter .nx-h2 { margin-inline:auto; }
@@ -213,3 +214,11 @@ body .nx-lead { font-size:clamp(20px,2vw,28px); font-weight:400; letter-spacing:
 @media(prefers-reduced-motion:reduce) {
  .nx-product-band,.nx-lockup,.nx-timeline { animation:none; transition:none; }
 }
+/* At intermediate widths, the rail follows the same vertical flow as its cards. */
+@media(max-width:1023px) {
+ .nx-method-cards.nx-timeline::before { inset:0 auto 0 0; width:1px; height:auto; }
+ .nx-method.nx-method-cards.nx-timeline > li { margin:0 0 0 16px; }
+ .nx-method-cards.nx-timeline > li::before { left:-21px; top:28px; }
+}
+/* The R-01 hidden-back sizing fix must not collapse the no-JavaScript fallback. */
+html:not(.js) .nx-flip-back[hidden] { position:relative; inset:auto; overflow:visible; padding-bottom:28px; }

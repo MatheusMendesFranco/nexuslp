@@ -40,3 +40,23 @@ P6 no diferencial/problema; P13 nas definições e integrações; P8 na confian�
 ## Passo 6 — legibilidade e status de consentimento
 
 Véus locais a 55% com blur de 6 px protegem corpo/lead sem cobrir o Canvas inteiro. Dentro de janelas e versos já opacos, o véu é dispensado. O toast mantém a região `role=status`, `aria-live=polite`, agora atômica; some em 3,5 s, reinicia o prazo após nova escolha e permanece vazio ao recarregar. O estado vazio não desenha superfície. Teste reproduz decisões consecutivas e reload; a escolha de cookies e carregamento do Pixel permanecem intactos.
+
+## Passo 7 — verificações e limites
+
+- `node --test tests/v6.test.cjs tests/http.test.cjs`: **38/38 PASS**, zero falhas. Inclui as regressões V6/V7/V8.1, identidade, títulos, cards mantidos, trilhos exclusivos, foco, status temporário e contraste.
+- Sintaxe de `experience.js`, `consent.js`, `track.js` e do helper de QA aprovada; `git diff --check` sem erros.
+- WCAG AA dos tokens sobre `#02040A`: LF texto **14,35:1**, BD texto **9,63:1**. Cem intervalos de cada gradiente de CTA também passam 4,5:1 com rótulo Void.
+- Motor simulado em oito larguras de 320 a 1920 px: coordenadas finitas, scroll/reversão, idle, buffer mobile e reduced-motion aprovados. Isso **não mede layout CSS nem console real**.
+- Revisão estática corrigiu o trilho vertical entre 768–1023 px, os índices locais da pesquisa/percurso LF, a hierarquia do bloco de problema BD e o dimensionamento do fallback sem JavaScript. IDs anteriores e o texto de todos os versos foram comparados ao HEAD base, sem perda.
+- **QA visual bloqueado pelo ambiente:** Chrome isolado encerra o processo gráfico com `GPU process isn't usable` (exit `-1073741790`); uma tentativa de renderização em processo retornou timeout em `Page.enable`. O navegador via CUA informa `The browser access host is unavailable`. Não houve captura V8 nem medição renderizada de overflow/console. Não declarar esses critérios aprovados até executar a revisão abaixo em ambiente com navegador funcional.
+
+### Como reproduzir / pendência para o Diretor
+
+1. No clone, executar `node --test tests/v6.test.cjs tests/http.test.cjs`.
+2. Servir `dist/` como raiz: `python -m http.server 8080 --directory dist` ou `node tools/serve.cjs 8080`.
+3. Em host com Chrome funcional: `node tools/v8-browser.cjs ../v8-qa`. O helper usa servidor local efêmero, perfil descartável e CDP nativo, sem instalar dependências. `NEXUS_CHROME` permite indicar o executável. O primeiro parâmetro define a pasta de capturas e `report.json`. O helper falha explicitamente se o navegador não funcionar.
+4. O helper verifica quatro rotas em 360/390/768/1024/1440 px, overflow em cada seção e card aberto, Enter nos flips, foco de preferências/demos, ausência de Pixel/requisições Meta antes de marketing, console/HTTP e reduced-motion. Compare capturas dos heros, bands, método, pesquisa/percurso LF, bento BD e FAQ com o mapa e as capturas V7. A verificação humana de composição e leitura continua necessária.
+
+### Arquivos e escopo
+
+Alterados: as quatro páginas `dist/{index.html,linha-de-frente/index.html,balcao-digital/index.html,privacidade/index.html}`, `dist/css/{variables.css,consent.css}`, `dist/js/{track.js,experience.js,consent.js}` e `tests/v6.test.cjs`. Criados: `dist/css/v8.css`, `tools/v8-browser.cjs` e este registro. O texto jurídico permanece intacto; a página de privacidade recebe apenas identidade compartilhada e URLs de assets. `interactions.js`, WhatsApp, conteúdo das demos e dependências permanecem iguais à base `4dd542d`. Sem push ou deploy.

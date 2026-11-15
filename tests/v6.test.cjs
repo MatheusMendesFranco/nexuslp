@@ -79,6 +79,18 @@ test('V8.2: preference status dismisses, restarts its timeout and is not restore
  const css=fs.readFileSync(path.join(root,'css/consent.css'),'utf8');assert.match(css,/\.nx-cookie-toast:empty\s*\{\s*display:none/);
  for(const id of ['solucao-lf','solucao-bd'])assert.ok(doc.querySelector('#'+id+' .nx-product-copy .nx-veil'));
 });
+
+test('V8.2: product text and CTA gradient samples meet AA against Nexus Void',()=>{
+ const css=fs.readFileSync(path.join(root,'css/variables.css'),'utf8');
+ const color=token=>css.match(new RegExp('--nx-'+token+':\\s*#([0-9a-f]{6})','i'))[1].match(/../g).map(v=>parseInt(v,16)/255);
+ const luminance=rgb=>rgb.map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
+ const bg=luminance(color('void')),ratio=rgb=>(luminance(rgb)+.05)/(bg+.05);
+ for(const code of ['lf','bd']){
+  assert.ok(ratio(color(code+'-text'))>=4.5,code+' text');
+  const a=color(code+'-a'),b=color(code+'-b');
+  for(let i=0;i<=100;i++)assert.ok(ratio(a.map((v,j)=>v+(b[j]-v)*i/100))>=4.5,code+' CTA gradient '+i);
+ }
+});
 test('4 pages: unique IDs, one H1, existing local assets/routes and ARIA references',()=>{
  for(const file of pages){const html=markup(file),env=environment(html),doc=env.document;
   assert.equal(doc.querySelectorAll('h1').length,1,file);
