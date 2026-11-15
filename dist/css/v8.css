@@ -124,3 +124,84 @@ body[data-product] .nx-cta:not(.nx-cta--ghost) { background:linear-gradient(115d
  .nx-detail-rail details p { margin:16px 0 0; }
 }
 @media(max-width:767px) { .nx-fact-cards.nx-prospect-cards { grid-template-columns:minmax(0,1fr); } }
+
+/* Content hierarchy: section titles, supporting leads and comfortable body text. */
+body .nx-h2 { font-size:clamp(32px,4.8vw,64px); font-weight:500; letter-spacing:-.03em; line-height:1.12; text-wrap:balance; }
+body .nx-body { font-size:clamp(17px,1.25vw,18px); line-height:1.65; }
+body .nx-lead { font-size:clamp(20px,2vw,28px); font-weight:400; letter-spacing:-.01em; line-height:1.35; }
+.nx-section .nx-h2 { max-width:19ch; }
+.nx-statement-band { border-block:1px solid #a8b3c726; background:linear-gradient(110deg,#0b122070,transparent); }
+.nx-statement-band .nx-chapter { margin-inline:auto; text-align:center; max-width:900px; }
+.nx-statement-band .nx-chapter .nx-h2 { margin-inline:auto; }
+.nx-statement-band .nx-body,.nx-statement-band .nx-lead { margin-inline:auto; }
+.nx-statement-band .nx-chapter + .nx-chapter { margin-top:40px; }
+.nx-statement-band .nx-chapter + .nx-chapter .nx-h2 { font-size:clamp(22px,2.5vw,32px); }
+.nx-statement-band .nx-operation-words { font:12px/1.7 var(--font-mono); letter-spacing:.06em; color:var(--nx-muted); }
+.nx-statement-band .nx-signature { font-size:clamp(28px,3.4vw,46px); }
+/* P13: definitions separated by a single structural seam. */
+.nx-comparison { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0; margin:48px 0 0; max-width:none; }
+.nx-comparison > div { min-width:0; border-top:1px solid color-mix(in srgb,var(--prod-a) 40%,transparent); padding:32px 40px 0 0; }
+.nx-comparison > div + div { border-left:1px solid #a8b3c738; padding:32px 0 0 40px; }
+.nx-comparison h3 { font-size:clamp(22px,2.6vw,32px); font-weight:500; line-height:1.25; letter-spacing:-.025em; margin:0; }
+.nx-comparison .nx-body { max-width:52ch; }
+/* P8: one primary statement with three supporting facts. */
+.nx-trust.nx-bento { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:20px; max-width:none; }
+.nx-trust.nx-bento > div { display:block; border:1px solid #a8b3c738; padding:28px; background:var(--nx-void-soft); }
+.nx-trust.nx-bento > div:first-child { grid-row:span 3; padding:clamp(28px,4vw,56px); background:radial-gradient(ellipse at top left,#20d6e710,transparent 75%),var(--nx-void-soft); }
+.nx-trust.nx-bento > div:first-child dt { font-size:clamp(32px,4.5vw,60px); }
+.nx-trust.nx-bento dd { margin:20px 0 0; font-size:16px; line-height:1.7; }
+.nx-operation-bento { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; align-items:start; }
+.nx-operation-bento > div { min-width:0; }
+.nx-bento-main { grid-row:span 3; padding:32px; border-top:1px solid var(--prod-a); background:var(--nx-void-soft); }
+.nx-bento-main .nx-chapter { max-width:100%; }
+.nx-operation-bento .nx-prospect-cards { margin:0; }
+.nx-operation-bento .nx-bento-note { padding:24px; border-top:1px solid #a8b3c738; background:var(--nx-void-soft); }
+.nx-bento-note h3 { margin:0; font-size:24px; font-weight:500; }
+.nx-bento-note .nx-type-list { margin-top:16px; font-size:15px; }
+.nx-persona-cards.nx-persona-bento { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:20px; }
+.nx-persona-bento .nx-flip-card { grid-column:span 2; align-self:stretch; }
+.nx-persona-bento .nx-flip-card:first-child { grid-column:span 3; grid-row:span 2; }
+.nx-persona-bento .nx-flip-card:nth-child(2),.nx-persona-bento .nx-flip-card:nth-child(3),.nx-persona-bento .nx-flip-card:nth-child(7),.nx-persona-bento .nx-flip-card:nth-child(8) { grid-column:span 3; }
+.nx-persona-bento .nx-flip-front { min-height:200px; gap:18px; }
+.nx-persona-bento .nx-flip-card:first-child .nx-flip-front { justify-content:center; }
+.nx-persona-bento .nx-flip-card:first-child .nx-card-title { font-size:clamp(38px,4.4vw,60px); }
+.nx-persona-bento .nx-card-title { font-size:clamp(26px,2.4vw,34px); }
+.nx-persona-bento .nx-card-signal { display:none; }
+.nx-persona-bento .nx-card-number { color:var(--prod-text); font-size:20px; }
+/* P9: facts use a typographic strip, not another repeated card surface. */
+.nx-fact-strip { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); margin-top:48px; }
+.nx-fact-strip > div { min-width:0; padding:0 28px; }
+.nx-fact-strip > div:first-child { padding-left:0; }
+.nx-fact-strip > div + div { border-left:1px solid #a8b3c738; }
+.nx-fact-strip h3 { margin:28px 0 18px; font-size:28px; letter-spacing:-.025em; font-weight:500; }
+.nx-fact-strip p { font-size:17px; line-height:1.65; color:var(--nx-muted); }
+.nx-fact-cards .nx-flip-card { border:0; border-left:1px solid color-mix(in srgb,var(--prod-a) 45%,transparent); border-radius:0; background:var(--nx-void-soft); }
+.nx-fact-cards .nx-card-number { font:300 clamp(40px,5vw,72px)/1 var(--font-mono); color:var(--prod-text); }
+.nx-fact-cards .nx-card-signal { display:none; }
+/* P10 / P11: FAQ beside a stable introduction; final action centered. */
+.nx-faq-layout { display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr); gap:clamp(32px,5vw,80px); align-items:start; }
+.nx-faq-intro { position:sticky; top:120px; min-width:0; }
+.nx-faq-intro .nx-h2 { margin-top:20px; }
+.nx-faq-layout .nx-faq { margin:0; min-width:0; }
+.nx-faq-layout summary { font-size:clamp(20px,2vw,25px); }
+.nx-final .nx-scene-content { text-align:center; }
+.nx-final .nx-body,.nx-final .nx-micro,.nx-final .nx-h2 { margin-inline:auto; }
+.nx-final .nx-eyebrow { justify-content:center; }
+.nx-final-products { display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin-bottom:28px; }
+.nx-demo-tabs button[aria-pressed="true"] { color:var(--prod-text); border-color:var(--prod-a); }
+@media(max-width:1023px) {
+ .nx-faq-layout { grid-template-columns:minmax(0,1fr); gap:40px; }
+ .nx-faq-intro { position:static; }
+ .nx-persona-bento .nx-flip-card:nth-child(n) { grid-column:span 3; grid-row:auto; }
+}
+@media(max-width:767px) {
+ body .nx-h2 { font-size:30px; } body .nx-lead { font-size:19px; }
+ .nx-comparison,.nx-trust.nx-bento,.nx-operation-bento,.nx-fact-strip,.nx-persona-cards.nx-persona-bento { grid-template-columns:minmax(0,1fr); }
+ .nx-comparison > div,.nx-comparison > div + div { border-left:0; padding:28px 0; }
+ .nx-trust.nx-bento > div:first-child,.nx-bento-main { grid-row:auto; }
+ .nx-persona-bento .nx-flip-card:nth-child(n) { grid-column:auto; }
+ .nx-persona-bento .nx-flip-card:first-child .nx-card-title { font-size:38px; }
+ .nx-fact-strip > div,.nx-fact-strip > div:first-child { padding:24px 0; }
+ .nx-fact-strip > div + div { border-left:0; border-top:1px solid #a8b3c738; }
+ .nx-bento-main { padding:24px; }
+}

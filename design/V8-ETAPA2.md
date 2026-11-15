@@ -32,3 +32,7 @@ Home com atalhos dos dois produtos, bands com lavagem de cor, tag, lockup e nome
 ## Passo 4 — trilhos e cenas
 
 Método com os cinco flip cards ligados em trilho; apenas uma face aberta por vez, com a primeira inicialmente aberta. Mobile vertical. LF reorganiza seus sete cards entre pesquisa (três), percurso (três) e acompanhamento (um), conservando todo o conteúdo e os IDs de deep link. BD separa problema, persona e fluxo em cenas; o fluxo usa details/summary nativos, agrupados por `name`, e narra a etapa selecionada. Somente formações existentes (`prospect`, `desk`, `method`).
+
+## Passo 5 — ritmo por conteúdo
+
+P6 no diferencial/problema; P13 nas definições e integrações; P8 na confiança e participação da Nexus. A quinta linha de confiança vira nota de identificação abaixo do bento, preservando o conteúdo. Persona mantém os oito flip cards em bento assimétrico (decisão do Diretor, substitui P12). Pesquisa LF e acompanhamento BD seguem P9. FAQ em P10 com introdução lateral e link para o contato existente; fechamento P11 com lockup. A escala distingue nome, título, lead, corpo, rótulo e índice sem números comerciais novos.

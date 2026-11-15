@@ -58,6 +58,16 @@ test('V8.2: method and prospect rails keep flips exclusive, keyboard focus and n
  assert.equal(details.filter(d=>d.open).length,1);assert.equal(bd.document.querySelector('#fluxo-atendimento').dataset.narrativeStep,'1');
  for(const [file,count] of [['linha-de-frente/index.html',9],['balcao-digital/index.html',9]])assert.equal(environment(markup(file)).document.querySelectorAll('main section').length,count);
 });
+
+test('V8.2: layout rhythm preserves facts, all persona flips and accessible FAQs',()=>{
+ for(const file of ['index.html','linha-de-frente/index.html','balcao-digital/index.html']){
+  const doc=environment(markup(file)).document;assert.ok(doc.querySelector('.nx-faq-layout .nx-faq-intro'));
+  assert.ok(doc.querySelector('.nx-faq-layout .nx-faq details summary'));assert.ok(doc.querySelector('.nx-final'));
+ }
+ const home=environment(markup('index.html')).document;assert.equal(home.querySelectorAll('.nx-trust.nx-bento dt').length,4);assert.match(home.querySelector('#confianca').textContent,/Você sabe com quem fala/);
+ const lf=environment(markup('linha-de-frente/index.html')).document;assert.ok(lf.querySelector('.nx-operation-bento [data-flip]'));assert.ok(lf.querySelector('.nx-comparison'));
+ const bd=environment(markup('balcao-digital/index.html')).document;assert.equal(bd.querySelectorAll('.nx-persona-bento [data-flip]').length,8);assert.equal(bd.querySelectorAll('.nx-fact-strip .nx-index').length,3);assert.equal(bd.querySelectorAll('.nx-comparison h3').length,2);
+});
 test('4 pages: unique IDs, one H1, existing local assets/routes and ARIA references',()=>{
  for(const file of pages){const html=markup(file),env=environment(html),doc=env.document;
   assert.equal(doc.querySelectorAll('h1').length,1,file);
