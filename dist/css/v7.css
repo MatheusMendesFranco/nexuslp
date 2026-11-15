@@ -182,3 +182,6 @@ html:not(.js) .nx-flip-back[hidden] { visibility:visible; opacity:1; transform:n
  .nx-method-cards .nx-flip-card { height:300px; }
  .nx-flip-card--pain .nx-card-title { font-size:clamp(26px,7.5vw,34px); }
 }
+/* Polimento 5: labels size to their text, not the title's ch constraint. */
+.nx-section > .nx-scene-content > .nx-eyebrow,.nx-section-intro .nx-eyebrow,.nx-hero .nx-eyebrow,.nx-section-heading > .nx-eyebrow,#desk .nx-chapter > .nx-eyebrow { width:max-content; max-width:100% !important; white-space:nowrap; gap:10px; font-size:clamp(10px,2.7vw,12px); }
+.nx-eyebrow::before { flex-shrink:0; }
