@@ -141,12 +141,22 @@
       ['Compra com financiamento','Faixa de valor e região informadas','Perguntas de qualificação','Encaminhar a um corretor'],
       ['Troca por veículo','Condição ausente na base','Aviso de informação indisponível','Encaminhamento humano']
     ];
+    function renderConsultation(index,active){
+      if(!consultation)return;
+      consultation.replaceChildren();
+      ['Intenção','Base','Resposta','Próximo passo'].forEach((label,i)=>{
+        const li=make('li');li.append(make('span',label),make('p',consulted[index][i]));
+        if(i===active)li.setAttribute('aria-current','step');
+        consultation.append(li);
+      });
+    }
     let responseTimer;
     function selectScenario(button,preview=false){
       const index=Number(button.dataset.chatChoice), scenario=content.chats[index];
       if (!scenario) return;
       demo.querySelectorAll('[data-chat-choice]').forEach(el=>el.setAttribute('aria-pressed',String(el===button)));
       clearTimeout(responseTimer);
+      renderConsultation(index,0);
       log.replaceChildren();
       const appendMessage=message=>{
         const bubble=make('div',null,'nx-chat-bubble'+(message.speaker==='Cliente'?' nx-chat-bubble--client':''));
@@ -166,7 +176,7 @@
         const tags=make('ul',null,'nx-demo-tags');scenario.tags.forEach(text=>tags.append(make('li',text)));log.append(tags);
        }
        if (scenario.note) log.append(make('p',scenario.note,'nx-demo-note'));
-       if(consultation){consultation.replaceChildren();['Intenção','Base','Resposta','Próximo passo'].forEach((label,i)=>{const li=make('li');li.append(make('span',label),make('p',consulted[index][i]));consultation.append(li);});}
+       renderConsultation(index,3);
        if(typing)typing.hidden=true;
        log.setAttribute('aria-busy','false');
        if(!preview)signal(demo,index===3?'human-handoff':'desk-step');

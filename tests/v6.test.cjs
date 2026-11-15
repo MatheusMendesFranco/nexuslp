@@ -252,6 +252,12 @@ test('V7: messenger typing is finite, consults fictional property data and cance
  doc.querySelector('[data-chat-choice="1"]').click();doc.querySelector('[data-chat-choice="3"]').click();env.advanceTime(500);
  assert.equal(doc.querySelectorAll('.nx-property-result').length,0);assert.match(doc.querySelector('[data-chat-log]').textContent,/Não tenho essa informação/);assert.match(doc.querySelector('[data-chat-consultation]').textContent,/Encaminhamento humano/);
 });
+test('Polimento 3: consultation lists four current values with one active state and no dummy input',()=>{
+ const env=app({},'balcao-digital/index.html'),doc=env.document,list=doc.querySelector('[data-chat-consultation]');
+ assert.equal(list.querySelectorAll('li').length,4);assert.equal(list.querySelectorAll('[aria-current="step"]').length,1);assert.equal(doc.querySelector('.nx-chat-disabled'),null);
+ doc.querySelector('[data-chat-choice="3"]').click();assert.equal(list.querySelector('[aria-current="step"] span').textContent,'Intenção');
+ env.advanceTime(420);assert.equal(list.querySelector('[aria-current="step"] span').textContent,'Próximo passo');assert.match(list.textContent,/Condição ausente na base/);
+});
 test('V7: UI-field bridge safely degrades and live pulses stop after their bounded duration',()=>{
  for(const options of [{noCanvas:true},{reduced:true}]){const env=app(options,'index.html',true);const button=env.document.querySelector('[data-flip]');assert.equal(env.window.NEXUS.field.pulse(button),false);button.click();assert.equal(button.getAttribute('aria-pressed'),'true');}
  const env=app({width:1440},'index.html',true);env.flush(160);assert.equal(env.window.NEXUS_DEBUG.idle,true);

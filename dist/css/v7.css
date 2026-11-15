@@ -160,3 +160,9 @@ html:not(.js) .nx-flip-back[hidden] { visibility:visible; opacity:1; transform:n
 /* Polimento 2: content-sized previews instead of empty fixed-height panes. */
 .nx-window .nx-demo-output { height:auto; min-height:180px; max-height:440px; }
 .nx-window .nx-chat-log { height:auto; min-height:180px; max-height:440px; }
+/* Polimento 3: a single vertical consultation trail with an explicit current step. */
+.nx-window .nx-consultation ol { display:flex; flex-direction:column; gap:8px; list-style:none; margin:0; padding:0; min-height:0; }
+.nx-window .nx-consultation li { margin:0; padding:10px 12px; border-left:2px solid transparent; }
+.nx-window .nx-consultation li[aria-current="step"] { border-left-color:var(--nx-cyan); background:var(--nx-surface-2); }
+.nx-consultation li span { white-space:nowrap; }
+.nx-chat-stage .nx-typing { position:static; grid-column:1/-1; justify-self:start; }
