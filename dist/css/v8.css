@@ -86,6 +86,7 @@ body[data-product] .nx-cta:not(.nx-cta--ghost) { background:linear-gradient(115d
 .nx-index,.nx-timeline .nx-card-number { font:300 clamp(40px,5vw,72px)/1 var(--font-mono); font-variant-numeric:tabular-nums; color:var(--prod-text); }
 .nx-method.nx-method-cards.nx-timeline { grid-template-columns:repeat(5,minmax(0,1fr)); align-items:start; }
 .nx-method.nx-method-cards.nx-timeline:has(.is-flipped) { grid-template-columns:repeat(6,minmax(0,1fr)); }
+@media(min-width:1024px) { .nx-method-hint { margin-inline:auto; text-align:center; } }
 .nx-timeline > li:has(.is-flipped) { grid-column:span 2; }
 .nx-method-cards.nx-timeline .nx-flip-card { height:auto; min-height:0; }
 .nx-timeline .nx-flip-front { min-height:170px; padding:24px 18px; gap:18px; }
