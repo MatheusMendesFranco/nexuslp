@@ -198,3 +198,16 @@ html:not(.js) .nx-flip-back[hidden] { visibility:visible; opacity:1; transform:n
 .nx-pain-actions .nx-text-link { gap:12px; }
 .nx-pain-actions .nx-text-link span { flex:none; }
 .nx-demo-output:focus-visible, .nx-chat-log:focus-visible { outline:2px solid var(--nx-cyan); outline-offset:2px; }
+
+.nx-flip-card.is-flipped .nx-flip-trigger { z-index:3; }
+.nx-flip-card.is-flipped .nx-flip-control { background:linear-gradient(transparent,var(--nx-surface) 30%); border-radius:0 0 20px 20px; }
+@media (max-width:767px) {
+  .nx-flip-front, .nx-method-cards .nx-flip-front { min-height:0; padding:24px 22px; gap:16px; justify-content:flex-start; }
+}
+/* Review V7: a flipped card grows to show its whole back (user-initiated, no scroll trap inside the card). */
+.nx-flip-card--pain.is-flipped, .nx-method-cards .nx-flip-card.is-flipped { height:auto; min-height:300px; }
+.nx-method-cards .nx-flip-card.is-flipped { min-height:260px; }
+.nx-flip-card.is-flipped .nx-flip-back { height:auto; overflow:visible; padding-bottom:76px; }
+@media (max-width:767px) {
+  .nx-flip-card--pain, .nx-method-cards .nx-flip-card { height:auto; min-height:0; }
+}

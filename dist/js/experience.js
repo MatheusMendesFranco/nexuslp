@@ -24,8 +24,8 @@
     if(!card||!panel)return;
     const originalLabel=button.querySelector('[data-flip-label]').textContent;
     button.addEventListener('click',()=>{
-      const open=button.getAttribute('aria-pressed')!=='true';
-      button.setAttribute('aria-pressed',String(open));panel.hidden=!open;card.classList.toggle('is-flipped',open);
+      const open=button.getAttribute('aria-expanded')!=='true';
+      button.setAttribute('aria-expanded',String(open));panel.hidden=!open;card.classList.toggle('is-flipped',open);
       button.querySelector('[data-flip-label]').textContent=open?'Voltar à frente':originalLabel;
       if(button.dataset.pain){
         const id=button.dataset.pain,region=button.closest('[data-scene]');
@@ -45,7 +45,7 @@
   function revealHashCard(){
     if(!location.hash || !/^#[\w-]+$/.test(location.hash))return;
     const target=document.querySelector(location.hash),button=target&&target.querySelector('[data-flip]');
-    if(button && button.getAttribute('aria-pressed')==='false')button.click();
+    if(button && button.getAttribute('aria-expanded')==='false')button.click();
   }
   revealHashCard();window.addEventListener('hashchange',revealHashCard);
 
@@ -107,7 +107,7 @@
       if(!preview){
         narrative(demo,'prospect',index/Math.max(1,steps.length-1));
         signal(demo,'prospect-step');
-        track('demo_interaction',{demo:'lf',step:String(index+1),action,origin:short?'home-demo':'lf-demo'});
+        if(action!=='scroll')track('demo_interaction',{demo:'lf',step:String(index+1),action,origin:short?'home-demo':'lf-demo'});
       }
     }
     start.addEventListener('click',()=>show(0,'start'));
@@ -118,7 +118,7 @@
     });
     variant.addEventListener('click',()=>show(6,'variant'));
     reset.addEventListener('click',()=>show(0,'restart'));
-    start.textContent='Recomeçar';
+    start.textContent=short?'Iniciar simulação':'Ver desde o início';
     show(short?0:2,'preview');
     window.addEventListener('scroll',()=>{
       if(reduced||innerWidth<1024||!scrollEnabled||scrollFrame)return;

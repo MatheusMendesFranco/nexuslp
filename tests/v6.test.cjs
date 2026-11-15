@@ -166,7 +166,7 @@ test('Product views observed before consent are sent once after the respective o
 });
 test('Pain selection changes narrative, panel, selection and announcement',()=>{
  const env=app({storage:saved(true,false)}),doc=env.document;
- for(const id of ['oportunidades','atendimento','retorno','informacao']){const button=doc.querySelector(`[data-pain="${id}"]`);button.click();assert.equal(doc.querySelector(`[data-pain-panel="${id}"]`).hidden,false);assert.equal(button.getAttribute('aria-pressed'),'true');assert.ok(doc.querySelector('[data-pain-status]').textContent);button.click();assert.equal(button.getAttribute('aria-pressed'),'false');assert.equal(doc.querySelector(`[data-pain-panel="${id}"]`).hidden,true);}
+ for(const id of ['oportunidades','atendimento','retorno','informacao']){const button=doc.querySelector(`[data-pain="${id}"]`);button.click();assert.equal(doc.querySelector(`[data-pain-panel="${id}"]`).hidden,false);assert.equal(button.getAttribute('aria-expanded'),'true');assert.ok(doc.querySelector('[data-pain-status]').textContent);button.click();assert.equal(button.getAttribute('aria-expanded'),'false');assert.equal(doc.querySelector(`[data-pain-panel="${id}"]`).hidden,true);}
  assert.equal(env.window.dataLayer.filter(e=>e.event==='pain_select').length,4);
 });
 test('LF has 8 editorial steps, optional follow-up branch and meeting; BD has 4 scenarios',()=>{
@@ -210,15 +210,15 @@ test('V7: card groups use native buttons, keyboard toggles and readable controll
  const expected=[['index.html',9],['linha-de-frente/index.html',7],['balcao-digital/index.html',8]];
  for(const [file,count] of expected){const env=app({},file),doc=env.document,cards=doc.querySelectorAll('[data-flip]');assert.equal(cards.length,count);
   for(const button of cards){assert.equal(button.tagName,'BUTTON');const panel=doc.querySelector('#'+button.getAttribute('aria-controls'));assert.ok(panel.textContent.trim().length>20);assert.equal(panel.hidden,true);
-   button.focus();button.pressKey('Enter');assert.equal(button.getAttribute('aria-pressed'),'true');assert.equal(panel.hidden,false);assert.equal(doc.activeElement,button);
-   button.pressKey(' ');assert.equal(button.getAttribute('aria-pressed'),'false');assert.equal(panel.hidden,true);assert.equal(doc.activeElement,button);
-   button.dispatchEvent({type:'pointerenter',pointerType:'mouse',target:button});assert.equal(button.getAttribute('aria-pressed'),'false');
+   button.focus();button.pressKey('Enter');assert.equal(button.getAttribute('aria-expanded'),'true');assert.equal(panel.hidden,false);assert.equal(doc.activeElement,button);
+   button.pressKey(' ');assert.equal(button.getAttribute('aria-expanded'),'false');assert.equal(panel.hidden,true);assert.equal(doc.activeElement,button);
+   button.dispatchEvent({type:'pointerenter',pointerType:'mouse',target:button});assert.equal(button.getAttribute('aria-expanded'),'false');
   }
  }
 });
 test('V7: reduced-motion cards have no 3D, no field pulse and immediate chat responses',()=>{
  const env=app({reduced:true},'balcao-digital/index.html',true),doc=env.document;
- const button=doc.querySelector('[data-flip]');button.focus();button.pressKey('Enter');assert.equal(button.getAttribute('aria-pressed'),'true');assert.equal(env.window.NEXUS.field.pulse(button,'card-open'),false);
+ const button=doc.querySelector('[data-flip]');button.focus();button.pressKey('Enter');assert.equal(button.getAttribute('aria-expanded'),'true');assert.equal(env.window.NEXUS.field.pulse(button,'card-open'),false);
  doc.querySelector('[data-chat-choice="3"]').click();assert.equal(doc.querySelector('[data-chat-typing]').hidden,true);assert.match(doc.querySelector('[data-chat-log]').textContent,/Não tenho essa informação/);
  const css=fs.readFileSync(path.join(root,'css/v7.css'),'utf8');assert.match(css,/@media\(prefers-reduced-motion:reduce\)[\s\S]*?perspective:none[\s\S]*?transform:none !important/);assert.match(css,/\.nx-flip-back\[hidden\][^{]*\{[^}]*display:block !important[^}]*visibility:hidden/);
 });
@@ -259,8 +259,8 @@ test('Polimento 3: consultation lists four current values with one active state 
  env.advanceTime(420);assert.equal(list.querySelector('[aria-current="step"] span').textContent,'Próximo passo');assert.match(list.textContent,/Condição ausente na base/);
 });
 test('V7: UI-field bridge safely degrades and live pulses stop after their bounded duration',()=>{
- for(const options of [{noCanvas:true},{reduced:true}]){const env=app(options,'index.html',true);const button=env.document.querySelector('[data-flip]');assert.equal(env.window.NEXUS.field.pulse(button),false);button.click();assert.equal(button.getAttribute('aria-pressed'),'true');}
+ for(const options of [{noCanvas:true},{reduced:true}]){const env=app(options,'index.html',true);const button=env.document.querySelector('[data-flip]');assert.equal(env.window.NEXUS.field.pulse(button),false);button.click();assert.equal(button.getAttribute('aria-expanded'),'true');}
  const env=app({width:1440},'index.html',true);env.flush(160);assert.equal(env.window.NEXUS_DEBUG.idle,true);
  assert.equal(env.window.NEXUS.field.pulse(null),false);assert.equal(env.window.NEXUS.field.pulse(env.document.querySelector('[data-flip]'),'card-open'),true);env.flush(90);assert.equal(env.window.NEXUS_DEBUG.idle,true);assert.ok([...env.window.NEXUS_DEBUG.X,...env.window.NEXUS_DEBUG.Y].every(Number.isFinite));
- const missing=environment(markup('index.html').replace(/<canvas[^>]*><\/canvas>/,''));for(const name of ['whatsapp','consent','track','content','experience','interactions'])missing.run(source(name));const card=missing.document.querySelector('[data-flip]');assert.equal(missing.window.NEXUS.field.pulse(card),false);card.pressKey('Enter');assert.equal(card.getAttribute('aria-pressed'),'true');
+ const missing=environment(markup('index.html').replace(/<canvas[^>]*><\/canvas>/,''));for(const name of ['whatsapp','consent','track','content','experience','interactions'])missing.run(source(name));const card=missing.document.querySelector('[data-flip]');assert.equal(missing.window.NEXUS.field.pulse(card),false);card.pressKey('Enter');assert.equal(card.getAttribute('aria-expanded'),'true');
 });
