@@ -225,3 +225,8 @@ body .nx-lead { font-size:clamp(20px,2vw,28px); font-weight:400; letter-spacing:
 }
 /* The R-01 hidden-back sizing fix must not collapse the no-JavaScript fallback. */
 html:not(.js) .nx-flip-back[hidden] { position:relative; inset:auto; overflow:visible; padding-bottom:28px; }
+/* Review V8 minors */
+.nx-hero-product .nx-product-role { margin-top:16px; }                       /* M-01 */
+.nx-lockup-brand, .nx-hero-product .nx-product-tag, .nx-window-badge { font-size:11.5px; letter-spacing:.1em; } /* M-02 */
+#solucao-lf .nx-veil::before, #solucao-bd .nx-veil::before { background:radial-gradient(ellipse at center,rgba(2,4,10,.78) 15%,rgba(2,4,10,.42) 65%,transparent 100%); } /* M-03 */
+#solucao-lf .nx-conclusion, #solucao-bd .nx-conclusion { font-size:clamp(24px,2.6vw,36px); }  /* M-04: product name leads the band */

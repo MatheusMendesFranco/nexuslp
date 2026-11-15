@@ -35,7 +35,7 @@ test('V8.2: home bands and shortcuts distinguish both products without replacing
  for(const code of ['lf','bd']){
   const band=doc.querySelector('#solucao-'+code);assert.equal(band.dataset.product,code);
   assert.ok(band.classList.contains('nx-product-band'));assert.ok(band.querySelector('h2.nx-product-name'));
-  assert.ok(band.querySelector('.nx-lockup'));assert.equal(band.querySelectorAll('.nx-flow-track li').length,5);
+  assert.ok(band.querySelector('.nx-product-name'));assert.ok(!band.querySelector('.nx-lockup'));assert.equal(band.querySelectorAll('.nx-flow-track li').length,5);
  }
  assert.equal(doc.querySelectorAll('.nx-product-shortcuts a').length,2);
  assert.equal(doc.querySelectorAll('.nx-product-connector .nx-lockup').length,2);
