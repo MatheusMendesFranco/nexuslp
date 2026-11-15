@@ -40,6 +40,24 @@ test('V8.2: home bands and shortcuts distinguish both products without replacing
  assert.equal(doc.querySelectorAll('.nx-product-connector .nx-lockup').length,2);
  assert.match(doc.querySelector('.nx-product-connector').textContent,/Funcionam separadas. Podem trabalhar juntas/);
 });
+
+test('V8.2: method and prospect rails keep flips exclusive, keyboard focus and narrative',()=>{
+ for(const file of ['index.html','linha-de-frente/index.html']){
+  const env=app({},file),doc=env.document,rail=doc.querySelector('[data-exclusive-flips]'),buttons=rail.querySelectorAll('[data-flip]');
+  for(const button of buttons){
+   if(button.getAttribute('aria-expanded')==='true')button.click();
+   button.focus();button.pressKey('Enter');
+   assert.equal(rail.querySelectorAll('[aria-expanded="true"]').length,1);
+   assert.equal(doc.activeElement,button);
+   assert.equal(doc.querySelector('#'+button.getAttribute('aria-controls')).hidden,false);
+   assert.ok(button.closest('[data-scene]').dataset.narrativeStep);
+  }
+ }
+ const bd=app({},'balcao-digital/index.html'),details=bd.document.querySelectorAll('[data-rail-detail]');assert.equal(details.length,5);
+ details[4].open=true;details[4].dispatchEvent({type:'toggle',bubbles:false});
+ assert.equal(details.filter(d=>d.open).length,1);assert.equal(bd.document.querySelector('#fluxo-atendimento').dataset.narrativeStep,'1');
+ for(const [file,count] of [['linha-de-frente/index.html',9],['balcao-digital/index.html',9]])assert.equal(environment(markup(file)).document.querySelectorAll('main section').length,count);
+});
 test('4 pages: unique IDs, one H1, existing local assets/routes and ARIA references',()=>{
  for(const file of pages){const html=markup(file),env=environment(html),doc=env.document;
   assert.equal(doc.querySelectorAll('h1').length,1,file);
@@ -240,7 +258,7 @@ test('All historical formations run independently; pointer, menu focus and dynam
 test('V7: card groups use native buttons, keyboard toggles and readable controlled backs',()=>{
  const expected=[['index.html',9],['linha-de-frente/index.html',7],['balcao-digital/index.html',8]];
  for(const [file,count] of expected){const env=app({},file),doc=env.document,cards=doc.querySelectorAll('[data-flip]');assert.equal(cards.length,count);
-  for(const button of cards){assert.equal(button.tagName,'BUTTON');const panel=doc.querySelector('#'+button.getAttribute('aria-controls'));assert.ok(panel.textContent.trim().length>20);assert.equal(panel.hidden,true);
+  for(const button of cards){assert.equal(button.tagName,'BUTTON');const panel=doc.querySelector('#'+button.getAttribute('aria-controls'));assert.ok(panel.textContent.trim().length>20);if(button.getAttribute('aria-expanded')==='true')button.click();assert.equal(panel.hidden,true);
    button.focus();button.pressKey('Enter');assert.equal(button.getAttribute('aria-expanded'),'true');assert.equal(panel.hidden,false);assert.equal(doc.activeElement,button);
    button.pressKey(' ');assert.equal(button.getAttribute('aria-expanded'),'false');assert.equal(panel.hidden,true);assert.equal(doc.activeElement,button);
    button.dispatchEvent({type:'pointerenter',pointerType:'mouse',target:button});assert.equal(button.getAttribute('aria-expanded'),'false');

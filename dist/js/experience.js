@@ -18,15 +18,24 @@
     if (cls) el.className=cls;
     return el;
   };
+  const flipLabels=new Map();
+  function setFlip(button,open) {
+    const card=button.closest('[data-flip-card]');
+    const panel=document.querySelector('#'+button.getAttribute('aria-controls'));
+    button.setAttribute('aria-expanded',String(open));
+    panel.hidden=!open;card.classList.toggle('is-flipped',open);
+    button.querySelector('[data-flip-label]').textContent=open?'Voltar à frente':flipLabels.get(button);
+  }
   document.querySelectorAll('[data-flip]').forEach(button=>{
     const card=button.closest('[data-flip-card]');
     const panel=document.querySelector('#'+button.getAttribute('aria-controls'));
     if(!card||!panel)return;
-    const originalLabel=button.querySelector('[data-flip-label]').textContent;
+    flipLabels.set(button,button.closest('[data-exclusive-flips]')?'Abrir etapa':button.querySelector('[data-flip-label]').textContent);
     button.addEventListener('click',()=>{
       const open=button.getAttribute('aria-expanded')!=='true';
-      button.setAttribute('aria-expanded',String(open));panel.hidden=!open;card.classList.toggle('is-flipped',open);
-      button.querySelector('[data-flip-label]').textContent=open?'Voltar à frente':originalLabel;
+      const rail=button.closest('[data-exclusive-flips]');
+      if(open&&rail)rail.querySelectorAll('[data-flip]').forEach(other=>{if(other!==button)setFlip(other,false);});
+      setFlip(button,open);
       if(button.dataset.pain){
         const id=button.dataset.pain,region=button.closest('[data-scene]');
         region.querySelector('[data-pain-status]').textContent=open?panel.querySelector('h3').textContent:'Situação recolhida.';
@@ -42,6 +51,12 @@
       card.style.setProperty('--card-y',((event.clientY-r.top)/Math.max(1,r.height)*100).toFixed(1)+'%');
     },{passive:true});
   });
+  document.querySelectorAll('[data-rail-detail]').forEach(detail=>detail.addEventListener('toggle',()=>{
+    if(!detail.open)return;
+    detail.closest('.nx-detail-rail').querySelectorAll('[data-rail-detail]').forEach(other=>{if(other!==detail)other.open=false;});
+    narrative(detail,'desk',Number(detail.dataset.stage));
+    signal(detail);
+  }));
   function revealHashCard(){
     if(!location.hash || !/^#[\w-]+$/.test(location.hash))return;
     const target=document.querySelector(location.hash),button=target&&target.querySelector('[data-flip]');

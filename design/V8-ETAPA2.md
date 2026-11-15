@@ -28,3 +28,7 @@ Um H1 com o nome do produto, claim aprovado subordinado, descritor de função e
 ## Passo 3 — bands P4 e conector P16
 
 Home com atalhos dos dois produtos, bands com lavagem de cor, tag, lockup e nome em H2. Composição espelhada preserva os cinco passos originais de cada solução. Conector reforça que operam separadas ou juntas. O gradiente de cada band fica no nome, evitando competição com a frase de benefício.
+
+## Passo 4 — trilhos e cenas
+
+Método com os cinco flip cards ligados em trilho; apenas uma face aberta por vez, com a primeira inicialmente aberta. Mobile vertical. LF reorganiza seus sete cards entre pesquisa (três), percurso (três) e acompanhamento (um), conservando todo o conteúdo e os IDs de deep link. BD separa problema, persona e fluxo em cenas; o fluxo usa details/summary nativos, agrupados por `name`, e narra a etapa selecionada. Somente formações existentes (`prospect`, `desk`, `method`).
