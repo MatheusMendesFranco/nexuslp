@@ -210,10 +210,10 @@ body .nx-lead { font-size:clamp(20px,2vw,28px); font-weight:400; letter-spacing:
  .nx-bento-main { padding:24px; }
 }
 
-/* Local reading veils leave the living field visible between content blocks. */
-.nx-veil { padding:14px 16px; border-radius:8px; background:rgba(2,4,10,.55); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
-.nx-window .nx-veil,.nx-flip-back .nx-veil { padding:0; border-radius:0; background:none; -webkit-backdrop-filter:none; backdrop-filter:none; }
-.nx-fact-strip p,.nx-detail-rail details p { padding:14px 16px; border-radius:8px; background:rgba(2,4,10,.55); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
+/* Diffuse ink behind prose: no box, text inset or horizontal layout extension. */
+.nx-veil,.nx-fact-strip p,.nx-detail-rail details p { position:relative; isolation:isolate; padding:0; background:none; }
+.nx-veil::before,.nx-fact-strip p::before,.nx-detail-rail details p::before { content:''; position:absolute; inset:-12px 0; z-index:-1; border-radius:50%; pointer-events:none; background:radial-gradient(ellipse at center,rgba(2,4,10,.6) 10%,rgba(2,4,10,.32) 65%,transparent 100%); box-shadow:0 0 24px 12px rgba(2,4,10,.18); filter:blur(16px); }
+.nx-window .nx-veil::before,.nx-flip-back .nx-veil::before { display:none; }
 @media(prefers-reduced-motion:reduce) {
  .nx-product-band,.nx-lockup,.nx-timeline { animation:none; transition:none; }
 }
