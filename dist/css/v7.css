@@ -101,7 +101,7 @@
  [data-scene="difference"] .nx-signature { margin-inline:auto; }
  [data-scene="contact"] .nx-micro,.nx-hero .nx-micro { margin-inline:auto; }
  .nx-hero .nx-continue { margin-inline:auto; }
- .nx-section > .nx-scene-content > .nx-h2:not(.nx-legal .nx-h2),.nx-section > .nx-scene-content > .nx-eyebrow { text-align:center; margin-inline:auto; max-width:26ch; justify-content:center; }
+ .nx-section:not(.nx-example-stage) > .nx-scene-content > .nx-h2:not(.nx-legal .nx-h2),.nx-section:not(.nx-example-stage) > .nx-scene-content > .nx-eyebrow { text-align:center; margin-inline:auto; max-width:26ch; justify-content:center; }
  .nx-product-layout { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); align-items:center; gap:24px; }
  .nx-product-copy { grid-column:1/7; grid-row:1; padding-right:30px; }
  .nx-product-route { grid-column:8/13; grid-row:1; border-top:1px solid #20d6e780; padding-top:30px; }
