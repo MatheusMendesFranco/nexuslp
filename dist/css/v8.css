@@ -205,3 +205,11 @@ body .nx-lead { font-size:clamp(20px,2vw,28px); font-weight:400; letter-spacing:
  .nx-fact-strip > div + div { border-left:0; border-top:1px solid #a8b3c738; }
  .nx-bento-main { padding:24px; }
 }
+
+/* Local reading veils leave the living field visible between content blocks. */
+.nx-veil { padding:14px 16px; border-radius:8px; background:rgba(2,4,10,.55); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
+.nx-window .nx-veil,.nx-flip-back .nx-veil { padding:0; border-radius:0; background:none; -webkit-backdrop-filter:none; backdrop-filter:none; }
+.nx-fact-strip p,.nx-detail-rail details p { padding:14px 16px; border-radius:8px; background:rgba(2,4,10,.55); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
+@media(prefers-reduced-motion:reduce) {
+ .nx-product-band,.nx-lockup,.nx-timeline { animation:none; transition:none; }
+}

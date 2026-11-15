@@ -36,3 +36,7 @@ Método com os cinco flip cards ligados em trilho; apenas uma face aberta por ve
 ## Passo 5 — ritmo por conteúdo
 
 P6 no diferencial/problema; P13 nas definições e integrações; P8 na confiança e participação da Nexus. A quinta linha de confiança vira nota de identificação abaixo do bento, preservando o conteúdo. Persona mantém os oito flip cards em bento assimétrico (decisão do Diretor, substitui P12). Pesquisa LF e acompanhamento BD seguem P9. FAQ em P10 com introdução lateral e link para o contato existente; fechamento P11 com lockup. A escala distingue nome, título, lead, corpo, rótulo e índice sem números comerciais novos.
+
+## Passo 6 — legibilidade e status de consentimento
+
+Véus locais a 55% com blur de 6 px protegem corpo/lead sem cobrir o Canvas inteiro. Dentro de janelas e versos já opacos, o véu é dispensado. O toast mantém a região `role=status`, `aria-live=polite`, agora atômica; some em 3,5 s, reinicia o prazo após nova escolha e permanece vazio ao recarregar. O estado vazio não desenha superfície. Teste reproduz decisões consecutivas e reload; a escolha de cookies e carregamento do Pixel permanecem intactos.

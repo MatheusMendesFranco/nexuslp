@@ -68,6 +68,17 @@ test('V8.2: layout rhythm preserves facts, all persona flips and accessible FAQs
  const lf=environment(markup('linha-de-frente/index.html')).document;assert.ok(lf.querySelector('.nx-operation-bento [data-flip]'));assert.ok(lf.querySelector('.nx-comparison'));
  const bd=environment(markup('balcao-digital/index.html')).document;assert.equal(bd.querySelectorAll('.nx-persona-bento [data-flip]').length,8);assert.equal(bd.querySelectorAll('.nx-fact-strip .nx-index').length,3);assert.equal(bd.querySelectorAll('.nx-comparison h3').length,2);
 });
+
+test('V8.2: preference status dismisses, restarts its timeout and is not restored on reload',()=>{
+ const env=app(),doc=env.document,toast=doc.querySelector('.nx-cookie-toast');
+ assert.equal(toast.textContent,'');assert.equal(toast.getAttribute('role'),'status');assert.equal(toast.getAttribute('aria-live'),'polite');assert.equal(toast.getAttribute('aria-atomic'),'true');
+ doc.querySelector('[data-consent="reject"]').click();assert.equal(toast.textContent,'Preferências salvas.');
+ env.advanceTime(3000);doc.querySelector('[data-consent="reject"]').click();env.advanceTime(500);assert.equal(toast.textContent,'Preferências salvas.');
+ env.advanceTime(2999);assert.ok(toast.textContent);env.advanceTime(1);assert.equal(toast.textContent,'');
+ assert.equal(app({storage:env.storageValue}).document.querySelector('.nx-cookie-toast').textContent,'');
+ const css=fs.readFileSync(path.join(root,'css/consent.css'),'utf8');assert.match(css,/\.nx-cookie-toast:empty\s*\{\s*display:none/);
+ for(const id of ['solucao-lf','solucao-bd'])assert.ok(doc.querySelector('#'+id+' .nx-product-copy .nx-veil'));
+});
 test('4 pages: unique IDs, one H1, existing local assets/routes and ARIA references',()=>{
  for(const file of pages){const html=markup(file),env=environment(html),doc=env.document;
   assert.equal(doc.querySelectorAll('h1').length,1,file);

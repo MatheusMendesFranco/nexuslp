@@ -59,7 +59,7 @@
       <a href="/privacidade/">Política de Privacidade</a>
       <div class="nx-cookie-actions"><button type="button" data-consent="save">Salvar preferências</button><button type="button" data-consent="accept">Aceitar todos</button><button type="button" data-consent="reject">Rejeitar não essenciais</button></div>
     </dialog>
-    <p class="nx-cookie-toast" role="status" aria-live="polite"></p>`;
+    <p class="nx-cookie-toast" role="status" aria-live="polite" aria-atomic="true"></p>`;
   document.body.appendChild(host);
   const banner = host.querySelector('.nx-cookie-banner');
   const dialog = host.querySelector('dialog');
@@ -144,7 +144,8 @@
     if (persist) {
       close(); toast.textContent = 'Preferências salvas.';
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => { toast.textContent = ''; }, 4500);
+      // Empty status stays in the live region; :empty removes the visual surface.
+      toastTimer = setTimeout(() => { toast.textContent = ''; }, 3500);
     }
     // Reload removes all already-loaded marketing code after revocation.
     // Never reload into stale accepted storage if a write failed (e.g. quota).
