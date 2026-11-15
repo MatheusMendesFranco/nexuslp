@@ -192,3 +192,8 @@ html:not(.js) .nx-flip-back[hidden] { visibility:visible; opacity:1; transform:n
 }
 /* Polimento 7: stronger at navigation height, fading without a solid box. */
 .nx-header-veil { height:calc(160px + env(safe-area-inset-top,0px)); background:linear-gradient(to bottom,rgba(2,4,10,.99),rgba(2,4,10,.97) 42%,rgba(2,4,10,.84) 65%,rgba(2,4,10,0)); }
+/* Polimento 8: explicit action spacing keeps the link arrow clear of WhatsApp. */
+.nx-pain-actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px 24px; margin-top:20px; }
+.nx-flip-back .nx-pain-actions .nx-text-link,.nx-flip-back .nx-pain-actions .nx-cta { margin:0; max-width:100%; }
+.nx-pain-actions .nx-text-link { gap:12px; }
+.nx-pain-actions .nx-text-link span { flex:none; }
