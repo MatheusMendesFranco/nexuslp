@@ -218,7 +218,7 @@ test('V7: card groups use native buttons, keyboard toggles and readable controll
 });
 test('V7: reduced-motion cards have no 3D, no field pulse and immediate chat responses',()=>{
  const env=app({reduced:true},'balcao-digital/index.html',true),doc=env.document;
- const button=doc.querySelector('[data-flip]');button.focus();button.pressKey('Enter');assert.equal(button.getAttribute('aria-expanded'),'true');assert.equal(env.window.NEXUS.field.pulse(button,'card-open'),false);
+ const button=doc.querySelector('[data-flip]');button.focus();button.pressKey('Enter');assert.equal(button.getAttribute('aria-expanded'),'true');assert.equal(env.window.NEXUS.field.pulse(button),false);
  doc.querySelector('[data-chat-choice="3"]').click();assert.equal(doc.querySelector('[data-chat-typing]').hidden,true);assert.match(doc.querySelector('[data-chat-log]').textContent,/Não tenho essa informação/);
  const css=fs.readFileSync(path.join(root,'css/v7.css'),'utf8');assert.match(css,/@media\(prefers-reduced-motion:reduce\)[\s\S]*?perspective:none[\s\S]*?transform:none !important/);assert.match(css,/\.nx-flip-back\[hidden\][^{]*\{[^}]*display:block !important[^}]*visibility:hidden/);
 });
@@ -258,9 +258,38 @@ test('Polimento 3: consultation lists four current values with one active state 
  doc.querySelector('[data-chat-choice="3"]').click();assert.equal(list.querySelector('[aria-current="step"] span').textContent,'Intenção');
  env.advanceTime(420);assert.equal(list.querySelector('[aria-current="step"] span').textContent,'Próximo passo');assert.match(list.textContent,/Condição ausente na base/);
 });
-test('V7: UI-field bridge safely degrades and live pulses stop after their bounded duration',()=>{
+test('V8: UI-field bridge safely degrades and node feedback settles without connectors',()=>{
  for(const options of [{noCanvas:true},{reduced:true}]){const env=app(options,'index.html',true);const button=env.document.querySelector('[data-flip]');assert.equal(env.window.NEXUS.field.pulse(button),false);button.click();assert.equal(button.getAttribute('aria-expanded'),'true');}
  const env=app({width:1440},'index.html',true);env.flush(160);assert.equal(env.window.NEXUS_DEBUG.idle,true);
- assert.equal(env.window.NEXUS.field.pulse(null),false);assert.equal(env.window.NEXUS.field.pulse(env.document.querySelector('[data-flip]'),'card-open'),true);env.flush(90);assert.equal(env.window.NEXUS_DEBUG.idle,true);assert.ok([...env.window.NEXUS_DEBUG.X,...env.window.NEXUS_DEBUG.Y].every(Number.isFinite));
+ assert.equal(env.window.NEXUS.field.pulse(null),false);assert.equal(env.window.NEXUS.field.pulse(env.document.querySelector('[data-flip]')),true);env.flush(90);assert.equal(env.window.NEXUS_DEBUG.idle,true);assert.ok([...env.window.NEXUS_DEBUG.X,...env.window.NEXUS_DEBUG.Y].every(Number.isFinite));
  const missing=environment(markup('index.html').replace(/<canvas[^>]*><\/canvas>/,''));for(const name of ['whatsapp','consent','track','content','experience','interactions'])missing.run(source(name));const card=missing.document.querySelector('[data-flip]');assert.equal(missing.window.NEXUS.field.pulse(card),false);card.pressKey('Enter');assert.equal(card.getAttribute('aria-expanded'),'true');
+});
+test('V8: pointer, focus, selection and component feedback add no lines or expanding rings',()=>{
+ const html='<html><head></head><body><canvas id="narrative-canvas"></canvas><section data-scene="isolated" data-formation="unknown" data-flow><div class="nx-scene-content"><button id="target" class="nx-cta">Detalhes</button></div></section></body></html>';
+ for(const mode of ['pointer','focus','selection','component','mouse-down','touch-down']){
+  const env=environment(html,{width:mode==='touch-down'?360:1440});env.run(source('interactions'));env.flush(180);
+  const debug=env.window.NEXUS_DEBUG,button=env.document.querySelector('#target');
+  assert.equal(debug.idle,true);assert.equal(Object.hasOwn(debug,'ripples'),false);
+  env.captureCanvas=true;env.event('load');env.flush(1);
+  const baseline=env.canvasCalls.filter(call=>call.method==='lineTo').length;assert.ok(baseline>0,'Scene continuity is preserved');env.canvasCalls.length=0;
+  const beforeX=Array.from(debug.X),beforeY=Array.from(debug.Y),frames=debug.frames;
+  const x=debug.X[0]+20,y=debug.Y[0]+10;
+  if(mode==='pointer')env.event('pointermove',{pointerType:'mouse',clientX:x,clientY:y});
+  if(mode==='focus')env.document.dispatchEvent({type:'focusin',target:button});
+  if(mode==='selection'){
+   env.window.getSelection=()=>({isCollapsed:false,rangeCount:1,getRangeAt:()=>({getBoundingClientRect:()=>({left:x-10,top:y-10,width:20,height:20})})});
+   env.document.dispatchEvent({type:'selectionchange'});
+  }
+  if(mode==='component')assert.equal(env.window.NEXUS.field.pulse(button),true);
+  if(mode.endsWith('-down'))env.event('pointerdown',{pointerType:mode==='touch-down'?'touch':'mouse',clientX:x,clientY:y,target:button});
+  env.flush(5);
+  assert.equal(env.canvasCalls.filter(call=>call.method==='lineTo').length,baseline*(debug.frames-frames),mode+': no extra connector/trail');
+  assert.equal(env.canvasCalls.filter(call=>['arc','ellipse','createRadialGradient'].includes(call.method)).length,0,mode+': no click ring or radial wave');
+  if(mode.endsWith('-down')){assert.deepEqual(Array.from(debug.X),beforeX);assert.deepEqual(Array.from(debug.Y),beforeY);}
+  else{assert.notDeepEqual(Array.from(debug.X),beforeX,mode+': nodes still react');}
+  if(mode==='pointer'||mode==='focus'||mode==='component')assert.ok(Array.from(debug.PROX).some(value=>value>0),'Lens and local glow remain active');
+  if(mode==='focus')env.document.dispatchEvent({type:'focusout'});
+  env.flush(180);assert.equal(debug.idle,true,mode+': returns to idle');
+ }
+ assert.doesNotMatch(source('interactions'),/\bripples\b|\blinkSource\b|\bdrawInteraction\b|\bcomponentSignal\b|\bnearSources\b/);
 });

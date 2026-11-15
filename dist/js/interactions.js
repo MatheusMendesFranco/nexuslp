@@ -10,7 +10,7 @@
  *                do scroll e acende por proximidade do cursor; paralaxe em camadas; CTA reage ao cursor
  *        campo   a MESMA matéria (glifos/nós) assume uma formação por cena; entre cenas sai da estrutura,
  *                voa em arco e forma a próxima. Reage a SIG: inércia por profundidade e elasticidade (scroll),
- *                lente + conexões ligadas ao cursor, arestas que se acendem com a energia da rolagem
+ *                lente e brilho dos nós perto do cursor, arestas que se acendem com a energia da rolagem
  *
  * Posições são função determinística do scroll (voltar a rolagem desfaz exatamente o que foi feito).
  * Eventos só atualizam alvos; o desenho acontece em requestAnimationFrame e para quando nada muda.
@@ -36,9 +36,9 @@
   const finePointer = matchMedia('(hover:hover) and (pointer:fine)').matches;
   const DEBUG = /[?&]nxdebug\b/.test(location.search);
   window.NEXUS = window.NEXUS || {};
-  window.NEXUS.field = Object.freeze({pulse(el,kind='component') {
+  window.NEXUS.field = Object.freeze({pulse(el) {
     if(reduce || !root.classList.contains('nx-live') || !el || !el.isConnected || typeof el.getBoundingClientRect!=='function') return false;
-    window.dispatchEvent(new CustomEvent('nx:signal',{detail:{el,kind}}));
+    window.dispatchEvent(new CustomEvent('nx:signal',{detail:{el}}));
     return true;
   }});
 
@@ -121,8 +121,6 @@
   const ptr = { on: false, tx: 0, ty: 0, x: 0, y: 0, nx: 0.5, ny: 0.5, s: 0 };
   const foc = { x: 0, y: 0, s: 0, tgt: 0 };
   const sel = { x: 0, y: 0, s: 0, tgt: 0 };
-  const ripples = [];
-  let componentSignal = null;
   let narrativeBusy = false;
   const magnets = [];
 
@@ -1260,9 +1258,9 @@
 
   const R_PTR = 190, R_FOC = 200, R_SEL = 230, PTR_MAX = 18;
 
-  function react(now) {
+  function react() {
     const pxn = ptr.nx - 0.5, pyn = ptr.ny - 0.5;
-    const useP = ptr.s > 0.01, useF = foc.s > 0.01, useS = sel.s > 0.01, nR = ripples.length;
+    const useP = ptr.s > 0.01, useF = foc.s > 0.01, useS = sel.s > 0.01;
     for (let i = 0; i < N; i++) {
       let x = X[i], y = Y[i];
       const d = nd.depth[i], m = M[i], member = m > 0.5;
@@ -1295,13 +1293,6 @@
         const dx = x - sel.x, dy = y - sel.y, d2 = dx * dx + dy * dy;
         if (d2 < R_SEL * R_SEL && d2 > 1) { const dd = Math.sqrt(d2), f = (1 - dd / R_SEL) ** 2 * sel.s; x -= dx / dd * 10 * f; y -= dy / dd * 10 * f; }
       }
-      // Toque / clique: onda local
-      for (let r = 0; r < nR; r++) {
-        const rp = ripples[r], age = now - rp.t0;
-        const dx = x - rp.x, dy = y - rp.y, dd = Math.hypot(dx, dy) || 1, rad = age * 0.42;
-        const w = Math.exp(-(((dd - rad) / 34) ** 2)) * (1 - age / 900);
-        if (w > 0.01) { x += dx / dd * 12 * w; y += dy / dd * 12 * w; G[i] = Math.min(1, G[i] + w * 0.6); }
-      }
       X[i] = x; Y[i] = y; PROX[i] = prox;
     }
   }
@@ -1315,14 +1306,6 @@
     g.fillStyle = gr; g.fillRect(0, 0, 48, 48);
     return s;
   });
-
-  const nearSources = [];
-  function gatherSources() {
-    nearSources.length = 0;
-    if (ptr.s > 0.02) nearSources.push([ptr.x, ptr.y, ptr.s, 170]);
-    if (foc.s > 0.02) nearSources.push([foc.x, foc.y, foc.s, 190]);
-    if (sel.s > 0.02) nearSources.push([sel.x, sel.y, sel.s, 240]);
-  }
 
   // Cores de aresta pré-computadas: [posição na paleta 0..16][calor 0..4] → "rgb(...)"; a opacidade vai por globalAlpha.
   const ECOL = Array.from({ length: 17 }, (_, pi) => Array.from({ length: 5 }, (_, hi) => {
@@ -1342,18 +1325,13 @@
       const stretch = 1 - sstep(1.22, 1.95, L / (F.er[k] + 10));
       const w = F.ew[k] * wf * stretch;
       if (w <= 0.01) continue;
-      let boost = 0;
-      if (nearSources.length) {
-        const mx = (ax + bx) * 0.5, my = (ay + by) * 0.5;
-        for (const s of nearSources) { const d = Math.hypot(mx - s[0], my - s[1]); if (d < s[3]) boost = Math.max(boost, (1 - d / s[3]) * s[2]); }
-      }
-      const eh = clamp(F.eh[k] * wf + boost * 0.55 + SIG.e * 0.42 * wf);
+      const eh = clamp(F.eh[k] * wf + SIG.e * 0.42 * wf);
       const hi = Math.round(eh * 4);
-      const c = ECOL[Math.round(clamp(F.et[k] + boost * 0.15) * 16)][hi];
+      const c = ECOL[Math.round(clamp(F.et[k]) * 16)][hi];
       if (c !== col) { ctx.strokeStyle = c; col = c; }
       const width = 0.8 + hi * 0.175;
       if (width !== lw) { ctx.lineWidth = width; lw = width; }
-      ctx.globalAlpha = Math.min(0.9, w * (0.3 + 0.5 * eh + SIG.e * 0.18) + boost * 0.2 * w);
+      ctx.globalAlpha = Math.min(0.9, w * (0.3 + 0.5 * eh + SIG.e * 0.18));
       ctx.beginPath(); ctx.moveTo(ax, ay);
       const ek = F.ek[k];
       if (ek > 0.02) {
@@ -1484,7 +1462,7 @@
           ctx.globalAlpha = 0.5 * fs * intro; ctx.beginPath(); ctx.moveTo(grad ? (x0 + X[i]) / 2 : x0, grad ? (y0 + Y[i]) / 2 : y0); ctx.lineTo(X[i], Y[i]); ctx.stroke();
           ctx.globalAlpha = 0.55 * fs * intro; ctx.beginPath(); ctx.arc(X[i], Y[i], 1.2 + fs * 0.9, 0, TAU); ctx.fill();
         }
-        if (g > 0.2 || i < 8) { // rastro de sinal quando a matéria se move
+        if (SIG.e > 0.02 && (g > 0.2 || i < 8)) { // rastro apenas com energia de rolagem
           const dxp = X[i] - PX[i], dyp = Y[i] - PY[i], sp = Math.hypot(dxp, dyp);
           if (sp > 1.8 && sp < 180) {
             ctx.globalAlpha = Math.min(0.5, sp * 0.03 * Math.max(g, 0.4)); ctx.lineWidth = 1.2;
@@ -1527,65 +1505,6 @@
     ctx.globalAlpha = 1;
   }
 
-  /** Conexões ligadas ao cursor/foco: os nós mais próximos se conectam à fonte (alteram a “conexão” do campo). */
-  const near4 = [[0, -1], [0, -1], [0, -1], [0, -1]];
-  function linkSource(sx, sy_, strength, energy) {
-    if (strength < 0.05) return;
-    for (const n of near4) { n[0] = 0; n[1] = -1; }
-    for (let i = 0; i < N; i++) {
-      const p = PROX[i];
-      if (p < 0.06) continue;
-      let w = 0; // posição de menor proximidade entre os 4
-      for (let k = 1; k < 4; k++) if (near4[k][0] < near4[w][0]) w = k;
-      if (p > near4[w][0]) { near4[w][0] = p; near4[w][1] = i; }
-    }
-    for (const [p, i] of near4) {
-      if (i < 0) continue;
-      const a = Math.min(0.78, Math.sqrt(p) * strength * (0.62 + 0.45 * energy));
-      const gr = ctx.createLinearGradient(sx, sy_, X[i], Y[i]);
-      gr.addColorStop(0, `rgba(160,248,255,${Math.min(0.9, a * 0.9).toFixed(3)})`); // ponta clara no cursor
-      gr.addColorStop(1, `rgba(139,92,246,${Math.min(0.9, a * 1.1).toFixed(3)})`);
-      ctx.strokeStyle = gr; ctx.lineWidth = 1.15;
-      ctx.beginPath(); ctx.moveTo(sx, sy_); ctx.lineTo(X[i], Y[i]); ctx.stroke();
-    }
-  }
-
-  function drawInteraction(now) {
-    linkSource(ptr.x, ptr.y, ptr.s, SIG.pe);
-    if (foc.s > 0.05) linkSource(foc.x, foc.y, foc.s, 0.6);
-    if(componentSignal) {
-      const age=now-componentSignal.started;
-      if(age>=1000 || !componentSignal.el.isConnected)componentSignal=null;
-      else {
-        const sx=componentSignal.x,sy_=componentSignal.documentY-scrollY;
-        let closest=0,best=Infinity;
-        for(let i=0;i<N;i++){const d=Math.hypot(X[i]-sx,Y[i]-sy_);if(d<best){best=d;closest=i;}}
-        const progress=clamp(age/1000),alpha=Math.sin(progress*Math.PI)*.75;
-        ctx.strokeStyle='rgb(32,214,231)';ctx.lineWidth=1;ctx.globalAlpha=alpha;
-        ctx.beginPath();ctx.moveTo(X[closest],Y[closest]);ctx.lineTo(sx,sy_);ctx.stroke();
-        ctx.beginPath();ctx.arc(mix(X[closest],sx,progress),mix(Y[closest],sy_,progress),2.6,0,TAU);ctx.fillStyle='rgb(248,250,252)';ctx.fill();ctx.globalAlpha=1;
-      }
-    }
-    for (let i = ripples.length - 1; i >= 0; i--) {
-      const r = ripples[i], age = now - r.t0;
-      if (age > 900) { ripples.splice(i, 1); continue; }
-      const k = 1 - age / 900;
-      const gr = ctx.createRadialGradient(r.x, r.y, Math.max(0, age * 0.42 - 6), r.x, r.y, age * 0.42 + 6);
-      gr.addColorStop(0, 'rgba(32,214,231,0)'); gr.addColorStop(0.5, `rgba(125,211,252,${(0.38 * k).toFixed(3)})`); gr.addColorStop(1, 'rgba(139,92,246,0)');
-      ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(r.x, r.y, age * 0.42 + 8, 0, TAU); ctx.fill();
-    }
-    if (sel.s > 0.03) { // seleção: sinal ligando o trecho aos nós mais próximos
-      const cx = sel.x, cy = sel.y, best = [];
-      for (let i = 0; i < N; i++) best.push([Math.hypot(X[i] - cx, Y[i] - cy), i]);
-      best.sort((a, b) => a[0] - b[0]);
-      for (let k = 0; k < 4; k++) {
-        const i = best[k][1], gr = ctx.createLinearGradient(cx, cy, X[i], Y[i]);
-        gr.addColorStop(0, `rgba(139,92,246,${(0.5 * sel.s).toFixed(3)})`); gr.addColorStop(1, `rgba(32,214,231,${(0.15 * sel.s).toFixed(3)})`);
-        ctx.strokeStyle = gr; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(X[i], Y[i]); ctx.stroke();
-      }
-    }
-  }
-
   // One signal remains between formations, crossing the lower edge of the
   // viewport. Its control point belongs to the same matter as the active scene.
   const signalPath = new Float32Array(98);
@@ -1619,10 +1538,9 @@
     ctx.globalAlpha = 1;
   }
 
-  function drawField(now) {
+  function drawField() {
     const t0 = performance.now();
     ctx.clearRect(0, 0, W, H);
-    gatherSources();
     const A = FA, B = st > 0 ? FB : null;
     const wA = B ? 1 - sstep(0, 0.35, st) : 1, wB = B ? sstep(0.65, 1, st) : 0;
     drawRings(A, wA); if (B) drawRings(B, wB);
@@ -1633,7 +1551,6 @@
     drawContinuity();
     drawScrollStreaks();
     drawNodes();
-    drawInteraction(now);
     drawCost = drawCost * 0.9 + (performance.now() - t0) * 0.1;
   }
 
@@ -1755,7 +1672,7 @@
     buildScene(FA,sA);
     if (sB) buildScene(FB,sB);
     compose(st, FA, sB ? FB : null);
-    react(now);
+    react();
     const aOpacity=sA.formation==='about'?.42:1, bOpacity=sB&&sB.formation==='about'?.42:1;
     const fieldOpacity=mix(aOpacity,bOpacity,smooth(st));
     if(surface===canvas && (canvas._opacity===undefined || Math.abs(canvas._opacity-fieldOpacity)>.01)) {
@@ -1765,7 +1682,7 @@
     frameNo++;
     // Preserve cadence at every quality level. Reduce DPR and glyph detail
     // before sacrificing frames; the narrative remains synchronized with text.
-    drawField(now);
+    drawField();
     if(surface!==canvas) {
       // A single copy publishes the finished bitmap, including transparency.
       // The visible canvas is never cleared between draws on the mobile path.
@@ -1794,7 +1711,7 @@
     const busy = Math.abs(ty - sy) > 0.01 || SIG.e > 0 || SIG.v !== 0 || SIG.pe > 0 || SIG.lagBusy > 0.08 ||
       Math.abs(ptr.x - ptr.tx) > 0.4 || Math.abs(ptr.y - ptr.ty) > 0.4 ||
       Math.abs(ptr.s - (ptr.on ? 1 : 0)) > 0.01 || Math.abs(foc.s - foc.tgt) > 0.01 || Math.abs(sel.s - sel.tgt) > 0.01 ||
-      ripples.length > 0 || componentSignal !== null || narrativeBusy || intro < 1 || magBusy;
+      narrativeBusy || intro < 1 || magBusy;
     frameCost = frameCost * .9 + (performance.now() - frameStart) * .1;
     if (busy) raf = requestAnimationFrame(frame);
     else lastT = 0;
@@ -1825,7 +1742,9 @@
     const el=event.detail && event.detail.el;
     if(!el || !el.isConnected || typeof el.getBoundingClientRect!=='function')return;
     const r=el.getBoundingClientRect();
-    componentSignal={el,kind:event.detail.kind,x:r.right-20,documentY:r.top+scrollY+22,started:performance.now()};kick();
+    // Reuse local node lens and glow, without a connector or expanding ring.
+    foc.x=r.left+r.width*.5;foc.y=r.top+Math.min(r.height*.5,120);
+    foc.s=Math.max(foc.s,.65);kick();
   });
   document.addEventListener('toggle', () => { layoutDirty = true; kick(); }, true);
 
@@ -1849,12 +1768,8 @@
     document.documentElement.addEventListener('pointerleave', () => { ptr.on = false; kick(); });
     addEventListener('blur', () => { ptr.on = false; kick(); });
   }
-  // Toque / clique: onda local + equivalência do hover em texto-chave
+  // Toque / clique: apenas equivalência do hover em texto-chave.
   addEventListener('pointerdown', e => {
-    if (e.pointerType !== 'touch') {           // toque no celular não gera onda: ele só inicia a rolagem
-      ripples.push({ x: e.clientX, y: e.clientY, t0: performance.now() });
-      if (ripples.length > 4) ripples.shift();
-    }
     const key = e.target.closest && e.target.closest('.nx-gradient-stack');
     if (key) { key.classList.add('is-touched'); clearTimeout(key._tt); key._tt = setTimeout(() => key.classList.remove('is-touched'), 1800); }
     kick();
@@ -1866,11 +1781,10 @@
     if (!t || !t.matches || !t.matches('a, button')) return;
     const r = t.getBoundingClientRect();
     foc.x = r.left + r.width / 2; foc.y = r.top + r.height / 2; foc.tgt = 1; kick();
-    if(t.matches('.nx-cta'))window.NEXUS.field.pulse(t,'cta-focus');
   });
   document.addEventListener('focusout', () => { foc.tgt = 0; kick(); });
 
-  // Seleção de texto altera conexões
+  // Seleção de texto afasta suavemente os nós próximos.
   document.addEventListener('selectionchange', () => {
     const s = getSelection();
     if (!s || s.isCollapsed || !s.rangeCount) { sel.tgt = 0; kick(); return; }
@@ -1912,5 +1826,5 @@
   for (let i = 0; i < N; i++) lag[i] = sy;
   kick();
 
-  if (DEBUG) window.NEXUS_DEBUG = { ripples, magnets, SIG, X, Y, PROX, ptr, scenes, get quality() { return quality; }, get dpr() { return dpr; }, get story() { return { si, st, sy }; }, get nodes() { return N; }, get cost() { return drawCost; }, get frameCost() { return frameCost; }, get draws() { return draws; }, get frames() { return frameNo; }, get buffered() { return surface!==canvas; }, get presents() { return presents; }, get idle() { return !raf; } };
+  if (DEBUG) window.NEXUS_DEBUG = { magnets, SIG, X, Y, PROX, ptr, scenes, get quality() { return quality; }, get dpr() { return dpr; }, get story() { return { si, st, sy }; }, get nodes() { return N; }, get cost() { return drawCost; }, get frameCost() { return frameCost; }, get draws() { return draws; }, get frames() { return frameNo; }, get buffered() { return surface!==canvas; }, get presents() { return presents; }, get idle() { return !raf; } };
 })();

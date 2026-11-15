@@ -2,7 +2,7 @@
   'use strict';
   const {content, track, whatsapp} = window.NEXUS;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const signal=(el,kind)=>window.NEXUS.field ? window.NEXUS.field.pulse(el,kind) : false;
+  const signal=el=>window.NEXUS.field ? window.NEXUS.field.pulse(el) : false;
   function narrative(el,formation,progress) {
     const scene=el.closest('[data-scene]');
     if (scene) {
@@ -33,7 +33,7 @@
         narrative(button,id==='oportunidades'?'prospect':id==='atendimento'?'desk':'method',open?.86:.1);
         if(open)track('pain_select',{pain:id,origin:'dor-'+id});
       }else narrative(button,button.dataset.flipKind==='prospect'?'prospect':button.dataset.flipKind==='desk'?'desk':'method',open?Number(button.dataset.fieldStage||.8):.1);
-      signal(card,open?'card-open':'card-close');
+      signal(card);
     });
     if(!reduced)card.addEventListener('pointermove',event=>{
       if(event.pointerType==='touch')return;
@@ -54,7 +54,7 @@
     scope.querySelectorAll('[data-demo-tab]').forEach(el=>el.setAttribute('aria-pressed',String(el===button)));
     scope.querySelectorAll('[data-demo-panel]').forEach(el=>{el.hidden=innerWidth<768&&el.dataset.demoPanel!==demo;});
     narrative(button,demo==='lf'?'prospect':'desk');
-    signal(button,'demo-select');
+    signal(button);
     track('demo_interaction',{demo,action:'select',origin:'home-demo'});
   }));
   function syncExamplePanels(){
@@ -106,7 +106,7 @@
       if (hadControlFocus) (next.hidden ? reset : next).focus({preventScroll:true});
       if(!preview){
         narrative(demo,'prospect',index/Math.max(1,steps.length-1));
-        signal(demo,'prospect-step');
+        signal(demo);
         if(action!=='scroll')track('demo_interaction',{demo:'lf',step:String(index+1),action,origin:short?'home-demo':'lf-demo'});
       }
     }
@@ -179,7 +179,7 @@
        renderConsultation(index,3);
        if(typing)typing.hidden=true;
        log.setAttribute('aria-busy','false');
-       if(!preview)signal(demo,index===3?'human-handoff':'desk-step');
+       if(!preview)signal(demo);
       };
       if(reduced||preview)finish();else responseTimer=setTimeout(finish,420);
       if(!preview){

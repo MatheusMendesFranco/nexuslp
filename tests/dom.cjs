@@ -68,7 +68,7 @@ function environment(html,{width=1440,height=900,reduced=false,noCanvas=false,st
   const storageEntries=new Map();
   if(storage!==null)storageEntries.set('nexus-consent',storage);
   if(legacyStorage!==null)storageEntries.set('nexus.consent.v1',legacyStorage);
-  const env={width,height,stableHeight:height,scrollY:0,noCanvas,now:0,dateNow,frames:new Map(),timers:new Map(),serial:0,draws:0,visibleClears:0,reloads:0,storageEntries};
+  const env={width,height,stableHeight:height,scrollY:0,noCanvas,now:0,dateNow,frames:new Map(),timers:new Map(),serial:0,draws:0,visibleClears:0,reloads:0,storageEntries,captureCanvas:false,canvasCalls:[]};
   Object.defineProperty(env,'storageValue',{get:()=>storageEntries.get('nexus-consent')??null});
   class TestDate extends Date {constructor(...args){super(...(args.length?args:[env.dateNow]));}static now(){return env.dateNow;}}
   const doc=new Node('#document',null);doc.ownerDocument=doc;doc.env=env;doc.height=10000;doc.hidden=false;doc.createElement=tag=>new Node(tag,doc);doc.createTextNode=text=>{const n=new Node('#text',doc);n._text=text;return n;};doc.createDocumentFragment=()=>new Node('#fragment',doc);
@@ -76,7 +76,7 @@ function environment(html,{width=1440,height=900,reduced=false,noCanvas=false,st
   let top=0;doc.querySelectorAll('[data-scene]').forEach(sc=>{sc._top=top;sc._height=Math.max(height,sc.querySelectorAll('.nx-chapter').length*height*.9+height);top+=sc._height;});doc.height=Math.max(height,top+300);
   env.canvasContext=el=>new Proxy({}, {get:(obj,key)=>{
     if(key in obj)return obj[key];
-    return (...args)=>{for(const a of args)if(typeof a==='number')assert.ok(Number.isFinite(a),'Canvas coordinate must be finite');if(key==='clearRect'&&el.id==='narrative-canvas')env.visibleClears++;if(key==='drawImage'&&el.id==='narrative-canvas')env.draws++;if(String(key).startsWith('create'))return {addColorStop(){}};};
+    return (...args)=>{for(const a of args)if(typeof a==='number')assert.ok(Number.isFinite(a),'Canvas coordinate must be finite');if(env.captureCanvas&&['moveTo','lineTo','arc','ellipse','createRadialGradient'].includes(key))env.canvasCalls.push({method:key,args});if(key==='clearRect'&&el.id==='narrative-canvas')env.visibleClears++;if(key==='drawImage'&&el.id==='narrative-canvas')env.draws++;if(String(key).startsWith('create'))return {addColorStop(){}};};
   },set:(obj,k,v)=>{if(typeof v==='number')assert.ok(Number.isFinite(v));obj[k]=v;return true;}});
   const listeners={};
   const win={document:doc,location:{pathname:'/',search:'?nxdebug',hostname:'localhost',reload:()=>env.reloads++},console,Date:TestDate,Math,Set,Map,WeakMap,Float32Array,Uint8Array,Uint16Array,Int16Array,
