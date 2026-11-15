@@ -211,3 +211,5 @@ html:not(.js) .nx-flip-back[hidden] { visibility:visible; opacity:1; transform:n
 @media (max-width:767px) {
   .nx-flip-card--pain, .nx-method-cards .nx-flip-card { height:auto; min-height:0; }
 }
+/* R-01: a hidden back must not size the card (it shares the grid cell with the front). */
+.nx-flip-back[hidden] { position:absolute; inset:0; overflow:hidden; }
