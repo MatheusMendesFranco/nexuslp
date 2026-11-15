@@ -231,10 +231,18 @@ test('V7: home shows two framed windows on desktop and tabs on mobile',()=>{
 test('V7: LF window advances by scroll only after starting on desktop, preserving control focus',()=>{
  for(const options of [{width:1440},{width:360},{width:1440,reduced:true}]){
   const env=app(options),doc=env.document,demo=doc.querySelector('[data-demo-lf]');demo._rect={left:40,top:0,width:700,height:2500};
-  env.scrollTo(100);assert.match(doc.querySelector('[data-lf-output]').textContent,/Conheça o percurso/);
+  env.scrollTo(100);assert.match(doc.querySelector('[data-lf-output]').textContent,/E-mail de abordagem/);
   const start=doc.querySelector('[data-lf-start]');start.focus();start.click();const next=doc.querySelector('[data-lf-next]');assert.equal(doc.activeElement,next);
   env.scrollTo(100+env.height*.36);assert.match(doc.querySelector('[data-lf-output]').textContent,options.width>=1024&&!options.reduced?/2 \/ 4/:/1 \/ 4/);
   if(options.width>=1024&&!options.reduced){env.scrollTo(100+env.height*1.1);assert.match(doc.querySelector('[data-lf-output]').textContent,/Reunião agendada/);assert.equal(doc.activeElement,doc.querySelector('[data-lf-reset]'));}
+ }
+});
+test('Polimento 2: windows open with email and a complete conversation, without interaction events',()=>{
+ for(const file of ['index.html','linha-de-frente/index.html','balcao-digital/index.html']){
+  const env=app({storage:saved(true,false)},file),doc=env.document;
+  const lf=doc.querySelector('[data-lf-output]');if(lf)assert.match(lf.textContent,/Assunto: Contabilidade/);
+  const chat=doc.querySelector('[data-chat-log]');if(chat){assert.equal(chat.querySelectorAll('.nx-chat-bubble').length,2);assert.equal(doc.querySelector('[data-chat-choice="0"]').getAttribute('aria-pressed'),'true');assert.equal(doc.querySelector('[data-chat-typing]').hidden,true);}
+  assert.equal((env.window.dataLayer||[]).filter(e=>e.event==='demo_interaction').length,0);
  }
 });
 test('V7: messenger typing is finite, consults fictional property data and cancels old responses',()=>{

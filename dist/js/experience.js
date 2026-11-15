@@ -79,12 +79,13 @@
     let scrollBase=0,scrollEnabled=false,scrollFrame=0;
     const route=short?[0,1,2,3]:[0,1,2,3,4,5,7];
     function show(i,action) {
+      const preview=action==='preview';
       // Browsers blur a control as soon as hidden removes it from layout.
       const activeControl=document.activeElement;
       const hadControlFocus=[start,next,variant,reset].includes(activeControl);
       index=i;
       const step=steps[index];
-      if(action!=='scroll'){
+      if(!preview && action!=='scroll'){
         scrollEnabled=!step.variant;
         scrollBase=scrollY-Math.max(0,route.indexOf(index))*innerHeight*.35;
       }
@@ -100,12 +101,14 @@
       if (step.tag) output.append(make('p',step.tag,'nx-demo-note'));
       output.dataset.channel=step.title.includes('WhatsApp')?'conversation':step.title.includes('Reunião')?'meeting':'email';
       if(output.dataset.channel==='meeting')output.append(make('p','Convite ilustrativo · agendamento conforme o formato combinado com a empresa.','nx-demo-note'));
-      start.hidden=true; next.hidden=index===steps.length-1; reset.hidden=false;
+      start.hidden=!preview; next.hidden=index===steps.length-1; reset.hidden=preview;
       variant.hidden=short||index!==5;
       if (hadControlFocus) (next.hidden ? reset : next).focus({preventScroll:true});
-      narrative(demo,'prospect',index/Math.max(1,steps.length-1));
-      signal(demo,'prospect-step');
-      track('demo_interaction',{demo:'lf',step:String(index+1),action,origin:short?'home-demo':'lf-demo'});
+      if(!preview){
+        narrative(demo,'prospect',index/Math.max(1,steps.length-1));
+        signal(demo,'prospect-step');
+        track('demo_interaction',{demo:'lf',step:String(index+1),action,origin:short?'home-demo':'lf-demo'});
+      }
     }
     start.addEventListener('click',()=>show(0,'start'));
     next.addEventListener('click',()=>{
@@ -115,6 +118,8 @@
     });
     variant.addEventListener('click',()=>show(6,'variant'));
     reset.addEventListener('click',()=>show(0,'restart'));
+    start.textContent='Recomeçar';
+    show(short?0:2,'preview');
     window.addEventListener('scroll',()=>{
       if(reduced||innerWidth<1024||!scrollEnabled||scrollFrame)return;
       scrollFrame=requestAnimationFrame(()=>{
@@ -137,7 +142,7 @@
       ['Troca por veículo','Condição ausente na base','Aviso de informação indisponível','Encaminhamento humano']
     ];
     let responseTimer;
-    demo.querySelectorAll('[data-chat-choice]').forEach(button=>button.addEventListener('click',()=>{
+    function selectScenario(button,preview=false){
       const index=Number(button.dataset.chatChoice), scenario=content.chats[index];
       if (!scenario) return;
       demo.querySelectorAll('[data-chat-choice]').forEach(el=>el.setAttribute('aria-pressed',String(el===button)));
@@ -148,8 +153,9 @@
         bubble.append(make('p',message.speaker,'nx-chat-speaker'),make('p',message.text));log.append(bubble);
       };
       appendMessage(scenario.messages[0]);
-      log.setAttribute('aria-busy',String(!reduced));
-      if(typing)typing.hidden=reduced;
+      log.setAttribute('aria-live',preview?'off':'polite');
+      log.setAttribute('aria-busy',String(!reduced&&!preview));
+      if(typing)typing.hidden=reduced||preview;
       const finish=()=>{
        scenario.messages.slice(1).forEach(appendMessage);
        if(index<2){
@@ -163,12 +169,16 @@
        if(consultation){consultation.replaceChildren();['Intenção','Base','Resposta','Próximo passo'].forEach((label,i)=>{const li=make('li');li.append(make('span',label),make('p',consulted[index][i]));consultation.append(li);});}
        if(typing)typing.hidden=true;
        log.setAttribute('aria-busy','false');
-       signal(demo,index===3?'human-handoff':'desk-step');
+       if(!preview)signal(demo,index===3?'human-handoff':'desk-step');
       };
-      if(reduced)finish();else responseTimer=setTimeout(finish,420);
-      narrative(demo,'desk',index===3?1:.7);
-      track('demo_interaction',{demo:'bd',step:String(index+1),action:'scenario',origin:demo.hasAttribute('data-short')?'home-demo':'bd-demo'});
-    }));
+      if(reduced||preview)finish();else responseTimer=setTimeout(finish,420);
+      if(!preview){
+        narrative(demo,'desk',index===3?1:.7);
+        track('demo_interaction',{demo:'bd',step:String(index+1),action:'scenario',origin:demo.hasAttribute('data-short')?'home-demo':'bd-demo'});
+      }
+    }
+    demo.querySelectorAll('[data-chat-choice]').forEach(button=>button.addEventListener('click',()=>selectScenario(button)));
+    const first=demo.querySelector('[data-chat-choice="0"]');if(first)selectScenario(first,true);
   });
   // Dynamically inserted CTAs use the same helper as static navigation.
   document.querySelectorAll('[data-contact="whatsapp"]').forEach(whatsapp.prepare);

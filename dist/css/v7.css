@@ -157,3 +157,6 @@
 }
 html:not(.js) .nx-flip-trigger { display:none; }
 html:not(.js) .nx-flip-back[hidden] { visibility:visible; opacity:1; transform:none; }
+/* Polimento 2: content-sized previews instead of empty fixed-height panes. */
+.nx-window .nx-demo-output { height:auto; min-height:180px; max-height:440px; }
+.nx-window .nx-chat-log { height:auto; min-height:180px; max-height:440px; }
