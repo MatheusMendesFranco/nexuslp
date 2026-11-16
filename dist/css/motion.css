@@ -3,11 +3,10 @@
    Revelações e ênfases acompanham continuamente o scroll via opacity/transform. */
 
 html { scroll-behavior: smooth; }
-body { overflow-x: clip; }
 
 /* ───────── Camadas: ambiente < canvas narrativo < conteúdo < header ───────── */
 .nx-ambient {
-  position: fixed; inset: -32px; z-index: 0; pointer-events: none;
+  position: fixed; inset: 0; width:100%; overflow:hidden; z-index: 0; pointer-events: none;
   background:
     radial-gradient(ellipse at 73% 45%, rgba(32, 214, 231, .065), transparent 43%),
     radial-gradient(ellipse at 89% 67%, rgba(139, 92, 246, .065), transparent 38%),

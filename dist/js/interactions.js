@@ -629,8 +629,9 @@
     return quality >= 2 ? Math.min(d, mob ? 1.5 : 2) : quality === 1 ? Math.min(d, 1.25) : 1;
   }
 
+  function viewportWidth() { return root.clientWidth || innerWidth; }
   function resizeCanvas() {
-    W = innerWidth;
+    W = viewportWidth();
     H = canvas.clientHeight || innerHeight;          // 100lvh: não muda quando a barra de endereço aparece/some
     mob = W < 900;
     VH = mob ? H : innerHeight;
@@ -1728,7 +1729,7 @@
   addEventListener('resize', () => {
     // An address-bar height change must not remap the story or rebuild formations.
     const stableH=canvas.clientHeight || innerHeight;
-    if(innerWidth!==W || Math.abs(stableH-H)>2 || !mob) layoutDirty=true;
+    if(viewportWidth()!==W || Math.abs(stableH-H)>2 || !mob) layoutDirty=true;
     maxScroll=Math.max(0,root.scrollHeight-innerHeight);
     kick();
   }, {passive:true});

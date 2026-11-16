@@ -6,7 +6,6 @@
 .nx-flip-trigger[aria-pressed="true"] { background:none; border-color:transparent; }
 .nx-flip-front { display:flex; flex-direction:column; align-items:start; justify-content:space-between; gap:24px; min-height:260px; padding:32px; pointer-events:auto; transform:rotateY(0); opacity:1; visibility:visible; backface-visibility:hidden; transition:transform 360ms var(--ease-out),opacity 180ms var(--ease-out),visibility 360ms; }
 .nx-flip-control { display:flex; gap:16px; justify-content:space-between; align-items:center; min-height:56px; padding:16px 28px; font-size:13px; letter-spacing:.02em; border-top:1px solid #a8b3c738; pointer-events:auto; }
-.nx-flip-control::after { content:'↗'; color:var(--nx-cyan); font-size:20px; }
 .nx-card-number { font:13px/1.5 var(--font-mono); color:var(--nx-cyan); }
 .nx-card-title { font-size:clamp(27px,3.2vw,46px); letter-spacing:-.04em; line-height:1.13; max-width:18ch; }
 .nx-card-signal { width:100%; color:var(--nx-cyan); font-family:var(--font-mono); font-size:24px; letter-spacing:.3em; opacity:.65; }
@@ -183,7 +182,7 @@ html:not(.js) .nx-flip-back[hidden] { visibility:visible; opacity:1; transform:n
  .nx-flip-card--pain .nx-card-title { font-size:clamp(26px,7.5vw,34px); }
 }
 /* Polimento 5: labels size to their text, not the title's ch constraint. */
-.nx-section > .nx-scene-content > .nx-eyebrow,.nx-section-intro .nx-eyebrow,.nx-hero .nx-eyebrow,.nx-section-heading > .nx-eyebrow,#desk .nx-chapter > .nx-eyebrow { width:max-content; max-width:100% !important; white-space:nowrap; gap:10px; font-size:clamp(10px,2.7vw,12px); }
+.nx-section > .nx-scene-content > .nx-eyebrow,.nx-section-intro .nx-eyebrow,.nx-hero .nx-eyebrow,.nx-section-heading > .nx-eyebrow,#desk .nx-chapter > .nx-eyebrow { width:auto; max-width:100% !important; white-space:normal; gap:0; font-size:clamp(11px,1vw,12px); }
 .nx-eyebrow::before { flex-shrink:0; }
 /* Polimento 6: all five commercial stages share one desktop row. */
 @media(min-width:1024px) {

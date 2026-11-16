@@ -232,4 +232,4 @@ html:not(.js) .nx-flip-back[hidden] { position:relative; inset:auto; overflow:vi
 #solucao-lf .nx-conclusion, #solucao-bd .nx-conclusion { font-size:clamp(24px,2.6vw,36px); }  /* M-04: product name leads the band */
 /* Faixas de produto da home: o campo não passa por trás dos nomes das etapas. */
 .nx-product-band .nx-flow-track { position:relative; isolation:isolate; }
-.nx-product-band .nx-flow-track::before { content:''; position:absolute; inset:-28px -24px -36px; z-index:-1; border-radius:50%; pointer-events:none; background:radial-gradient(ellipse at center,rgba(2,4,10,.82) 30%,rgba(2,4,10,.5) 70%,transparent 100%); filter:blur(14px); }
+.nx-product-band .nx-flow-track::before { content:''; position:absolute; inset:-28px 0 -36px; z-index:-1; border-radius:50%; pointer-events:none; background:radial-gradient(ellipse at center,rgba(2,4,10,.82) 30%,rgba(2,4,10,.5) 70%,transparent 100%); filter:blur(14px); }
