@@ -11,3 +11,8 @@ details[open] > summary .nx-icon--chevron { transform:rotate(90deg); }
 
 /* R-1: background geometry stays inside the layout viewport, without body clipping. */
 #narrative-canvas,.nx-reading-progress,.nx-header-veil,.nx-ambient { left:0; right:0; width:100%; max-width:100%; }
+
+/* T-1: balanced headings and readable prose; unsupported engines keep native wrapping. */
+h1,h2,h3,.nx-lead,.nx-card-title,.nx-hero .nx-line { text-wrap:balance; }
+p,li,dt,dd { text-wrap:pretty; }
+.nx-nowrap { white-space:nowrap; }

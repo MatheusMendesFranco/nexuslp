@@ -9,3 +9,7 @@ Base `b8d0611`, branch `fix/v9-mobile`. Escopo: `brief/V9-MOBILE.md`, auditoria 
 ## Grupo 2 — R-1
 
 Corrigida a extensão horizontal de 24 px do pseudo-elemento das etapas da home: ela excedia a margem de 16 px em 8 px (e a margem de 20 px em 4 px no tablet), compatível com a medida da auditoria. Ambiente sem inset negativo, com overflow contido localmente; quatro camadas limitadas à largura útil. Removido o `overflow-x:clip` do body. Canvas usa `documentElement.clientWidth` no dimensionamento e no teste de resize, impedindo realimentação de `innerWidth` inflado. Alteração restrita à medição; buffer, idle, formações e altura estável permanecem. Fixture reproduz innerWidth 8 px maior nas quatro larguras e confirma tamanho do buffer e estabilidade mobile.
+
+## Grupo 3 — T-1
+
+Balance em títulos/leads/frentes de card; pretty em parágrafos, listas e definições, com fallback nativo. As três órfãs explícitas recebem agrupamentos curtos sem quebra (`cada cliente.`, `quando quiser.`, `sua empresa.`), preservando o texto e evitando dependência de pretty em browsers antigos. As mensagens, nomes acessíveis e dados de CTA não mudam.
