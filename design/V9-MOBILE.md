@@ -17,3 +17,7 @@ Balance em títulos/leads/frentes de card; pretty em parágrafos, listas e defin
 ## Grupo 4 — A-1
 
 Token de header 76 px desktop / 68 px mobile, incluindo safe area, usado no header e no scroll-margin de `#conteudo` e das âncoras internas (inclui cards e capítulos). Respiro de 16 px. Scroll-padding anterior zerado para não somar dois deslocamentos. Mantidos skip-link nativo, tabindex do main, foco das demos e dos painéis de consentimento.
+
+## Grupo 5 — P-1
+
+Logo com área mínima de 44 px e padding de toque; margem compensatória conserva a posição visual do símbolo e wordmark. Links do sumário jurídico com área mínima de 44 px, flex e alinhamento vertical, conservando conteúdo e destinos. Nenhum listener ou comportamento de navegação alterado.

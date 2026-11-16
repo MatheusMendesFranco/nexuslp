@@ -21,3 +21,7 @@ p,li,dt,dd { text-wrap:pretty; }
 html { scroll-padding-top:0; }
 .nx-header { min-height:var(--header-h); }
 main[id],main [id],.nx-anchor { scroll-margin-top:calc(var(--header-h) + 16px); }
+
+/* P-1: expand hit areas while keeping the wordmark's visual position. */
+.nx-logo { min-height:44px; min-width:44px; padding:10px 8px; margin-inline:-8px; }
+.nx-legal nav a[href^="#"] { display:flex; align-items:center; min-height:44px; padding-block:8px; }
