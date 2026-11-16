@@ -3,12 +3,25 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const {environment}=require('./dom.cjs');
+const {files,withoutComments}=require('./source-audit.cjs');
 const root=path.resolve(__dirname,'../dist');
 const source=name=>fs.readFileSync(path.join(root,'js',name+'.js'),'utf8');
 const pages=['index.html','linha-de-frente/index.html','balcao-digital/index.html','privacidade/index.html'];
 const markup=file=>fs.readFileSync(path.join(root,file),'utf8');
 function app(options={},file='index.html',engine=false){const env=environment(markup(file),options);env.window.location.pathname=file==='index.html'?'/':'/'+file.replace('index.html','');for(const script of ['whatsapp','consent','track','content','experience',...(engine?['interactions']:[])])env.run(source(script));return env;}
 const saved=(measurement,marketing)=>JSON.stringify({version:1,measurement,marketing,updatedAt:'2026-11-14T00:00:00.000Z'});
+
+test('V9: public HTML/CSS/JS has no text arrows, geometric emoji or pictographs outside comments',()=>{
+ const forbidden=/[\u2190-\u21ff\u25a0-\u25ff\u2600-\u27bf\u{1f000}-\u{1faff}\ufe0f\u20e3]|\p{Extended_Pictographic}/gu;
+ for(const file of files(root))assert.doesNotMatch(withoutComments(fs.readFileSync(file,'utf8'),path.extname(file)),forbidden,path.relative(root,file));
+ // Comments can contain design notes; a string or URL must not hide a visible symbol.
+ assert.equal(withoutComments('// \u2192\n/* \u2197 */ const label="x";','.js').includes('\u2192'),false);
+ assert.ok(withoutComments('const label="https://example.com/\u2197"; // comment','.js').includes('\u2197'));
+ for(const file of pages){const doc=environment(markup(file)).document;
+  for(const control of doc.querySelectorAll('.nx-flip-control'))assert.equal(control.querySelectorAll('.nx-icon').length,1,'Single card icon');
+  for(const summary of doc.querySelectorAll('summary')){const icons=summary.querySelectorAll('.nx-icon--chevron');assert.equal(icons.length,1);assert.equal(icons[0].getAttribute('aria-hidden'),'true');}
+ }
+});
 
 test('V8.2: product identity is present in navigation, body, windows and metadata',()=>{
  for(const [code,route,name] of [['lf','linha-de-frente','Linha de Frente'],['bd','balcao-digital','Balcão Digital']]){

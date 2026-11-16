@@ -108,7 +108,7 @@
       output.append(make('p',`${index+1} / ${steps.length}`,'nx-demo-count'),make('h3',step.title,'nx-demo-title'));
       if (step.preface) output.append(make('p',step.preface,'nx-chat-bubble nx-chat-bubble--client'));
       if (step.subject) output.append(make('p','Assunto: '+step.subject,'nx-email-subject'));
-      if(step.subject)output.append(make('p','Consultoria Exemplo → Marina · Clínica Exemplo','nx-email-correspondents'));
+      if(step.subject)output.append(make('p','Consultoria Exemplo · Marina · Clínica Exemplo','nx-email-correspondents'));
       if (step.speaker) output.append(make('p',step.speaker,'nx-micro'));
       if (step.body) output.append(make('p',step.body,step.reply?'nx-chat-bubble':''));
       if (step.reply) output.append(make('p',step.reply,'nx-chat-bubble nx-chat-bubble--client'));

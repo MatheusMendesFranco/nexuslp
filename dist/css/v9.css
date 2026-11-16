@@ -1,0 +1,10 @@
+/* V9: same Nexus system, with consistent native-independent icons and mobile rhythm. */
+.nx-icon { display:inline-block; width:16px; height:16px; flex:none; color:inherit; vertical-align:-.125em; }
+.nx-text-link .nx-icon { margin-left:0; }
+.nx-flip-control .nx-icon { color:var(--prod-text); }
+.nx-faq summary,.nx-detail-rail summary { list-style:none; display:flex; align-items:center; gap:12px; }
+summary::-webkit-details-marker { display:none; }
+summary::marker { content:''; }
+summary .nx-icon--chevron { margin-left:auto; transition:transform var(--dur-fast) var(--ease-out); }
+details[open] > summary .nx-icon--chevron { transform:rotate(90deg); }
+@media(prefers-reduced-motion:reduce) { summary .nx-icon--chevron { transition:none; } }
