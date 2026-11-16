@@ -25,3 +25,24 @@ Logo com área mínima de 44 px e padding de toque; margem compensatória conser
 ## Grupo 6 — S-1 / S-2 e ritmo B
 
 Escala section/block/tight: 72/32/12 px mobile, 96/40/16 tablet, 128/48/16 desktop. Seções, hero (header + block), capítulos, grades e janelas consomem os tokens; retiradas margens finais de 80 px das grades LF e alturas mínimas de viewport das cenas de demo. Botões, lógica e foco das demos não mudam. Faixas de produto com lista vertical numerada no mobile, sem etapa 05 isolada; links e claims com respiro consistente. Eyebrows sem traço decorativo oculto nem recuo vazio. Véus sem padding e leads alinhados à margem no mobile/tablet. Palavras do diferencial em lista vertical L4 no celular. Grupos de título da home centralizados como bloco no tablet, texto alinhado à esquerda, largura até 28ch. Teste valida o contrato de tokens e seu consumo, sem alegar medir CSS renderizado.
+
+## Grupo 7 — C-1 / T-2 / E-4 / P-2 e refinamentos B
+
+Frentes das dores com altura uniforme no mobile; versos só dimensionam a face aberta e crescem sem scroll interno. Tamanho em `max(300px,18em)` acompanha o tamanho do texto; fallback sem JS continua natural. Persona com índice+título em linha, teaser abaixo, padding de 16 px, controle de 44 px e gap tight. Trilho LF com raio de 12 px e padding de 18 px compartilhado pelos rótulos e faces; fundo e rodapé aberto consistentes. Rótulos e tags com 12 px. Toast opaco sob o header e fora do rodapé, preservando live region e temporizador. Política com introdução e dezesseis seções irmãs em um article; botão de preferências no contato, todos os IDs e o texto preservados. Teste cobre a estrutura e os dezesseis links do índice.
+
+## Verificações e limites de evidência
+
+- `node --test tests/v6.test.cjs tests/http.test.cjs`: **42/42 PASS**, zero falhas. Novos testes: zero emoji, viewport inflado em 8 px, contrato de tokens e estrutura jurídica. Regressões de consentimento, CTAs, eventos, teclado/foco, reduced-motion, buffer mobile e idle aprovadas.
+- `node --check dist/js/interactions.js` e `node --check dist/js/experience.js`: aprovados. `git diff --check`: aprovado.
+- Comparação direta com `b8d0611`: texto integral do main da privacidade igual após normalizar whitespace. Texto dos demais mains igual após descontar setas/separadores decorativos. Nenhuma mudança nos arquivos de consentimento, WhatsApp, tracking ou conteúdo das demos.
+- Tentativa de `node ../brief/probe8.mjs dist ../v9-qa / home`: **bloqueada por `ERR_MODULE_NOT_FOUND: playwright`**. Nenhum pacote foi instalado. A inspeção visual usa as capturas fornecidas; não há capturas posteriores nem medição de layout/console real neste ambiente. O fixture de DOM não substitui `scrollWidth === clientWidth` em navegador.
+
+### Para validar em navegador
+
+Servir `dist/` como raiz (`python -m http.server 8080 --directory dist` ou `node tools/serve.cjs 8080`). Conferir as quatro páginas em 360, 390, 768 e 1440 px: largura do documento igual a clientWidth, camadas de fundo sem excesso, alvos de 44 px, skip-link/âncoras sem cobertura, chevrons sem marcador nativo, quatro dores fechadas com mesma altura e versos sem corte, oito personas compactas, rótulos LF alinhados, listas de cinco etapas e ritmo desktop. Repetir com reduced-motion e menu/painéis abertos.
+
+Com Playwright disponível, executar o probe fornecido com caminho absoluto para `dist` e comparar às capturas `brief/shots-v9/`. Em Git Bash usar `MSYS_NO_PATHCONV=1`. O helper local `tools/v8-browser.cjs` também contém verificações de overflow por seção/card e captura de console, mas depende de Chrome funcional.
+
+### Arquivos
+
+Criados: `dist/css/v9.css`, `tests/source-audit.cjs` e este registro. Alterados: as quatro páginas, `dist/css/{variables.css,motion.css,v7.css,v8.css}`, `dist/js/{interactions.js,experience.js}`, `tests/{dom.cjs,v6.test.cjs}`. Assets afetados com cache `v=9`. Nenhuma dependência nova, deploy ou push.

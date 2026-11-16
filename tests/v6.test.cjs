@@ -42,6 +42,15 @@ test('V9: spacing tokens define the mobile/tablet/desktop contract and section/h
  for(const file of pages)assert.ok(environment(markup(file)).document.querySelector('link[href="/css/v9.css?v=9"]'));
 });
 
+test('V9 P-2: privacy introduction and sixteen legal sections are siblings with intact anchors',()=>{
+ const doc=environment(markup('privacidade/index.html')).document,article=doc.querySelector('.nx-legal-document');
+ assert.ok(article);const sections=article.querySelectorAll('section');assert.equal(sections.length,17);
+ for(const section of sections){assert.equal(section.parentElement,article);assert.equal(section.parentElement.closest('section'),null);}
+ assert.equal(doc.querySelector('#inicio').querySelectorAll('section').length,0);
+ assert.equal(doc.querySelectorAll('.nx-legal nav a[href^="#"]').length,16);
+ assert.equal(doc.querySelector('[data-consent-open]').closest('section').id,'contato');
+});
+
 test('V8.2: product identity is present in navigation, body, windows and metadata',()=>{
  for(const [code,route,name] of [['lf','linha-de-frente','Linha de Frente'],['bd','balcao-digital','Balcão Digital']]){
   const doc=environment(markup(route+'/index.html')).document;

@@ -34,6 +34,7 @@ main[id],main [id],.nx-anchor { scroll-margin-top:calc(var(--header-h) + 16px); 
 .nx-section-heading { padding-top:0; padding-bottom:var(--space-block); }
 .nx-product-connector { padding-block:var(--space-block); }
 .nx-between { padding-block:var(--space-block) 0; }
+.nx-between .nx-body { margin-top:0; }
 .nx-hero-split,.nx-faq-layout { gap:var(--space-block); }
 .nx-prospect-cards { margin-block:var(--space-block) 0; gap:var(--space-tight); }
 .nx-operation-bento .nx-prospect-cards { margin:0; }
@@ -78,4 +79,28 @@ main[id],main [id],.nx-anchor { scroll-margin-top:calc(var(--header-h) + 16px); 
  .nx-product-band .nx-flow-number { display:inline; margin:0; }
  .nx-product-band .nx-flow-track li::before,.nx-product-band .nx-flow-track li::after { display:none; }
  .nx-statement-band .nx-operation-words { display:flex; flex-direction:column; align-items:flex-start; gap:var(--space-tight); margin-top:var(--space-block); font:400 20px/1.4 var(--font-display); letter-spacing:-.01em; color:var(--nx-text); }
+}
+
+/* C-1 / T-2 / E-4 / P-2 and remaining card refinements. */
+.nx-window-badge,.nx-lockup-brand,.nx-consultation li span,.nx-example-label { font-size:12px; letter-spacing:.06em; }
+.nx-product-tag,.nx-hero-product .nx-product-tag { font-size:12px; letter-spacing:.06em; white-space:normal; }
+.nx-contact-rail .nx-flip-card { border-radius:12px; background:linear-gradient(var(--nx-surface),var(--nx-surface)) padding-box,linear-gradient(115deg,var(--prod-a),var(--prod-b)) border-box; }
+.nx-contact-rail > li > .nx-label { padding-inline:18px; margin-bottom:var(--space-tight); }
+.nx-contact-rail .nx-flip-front,.nx-contact-rail .nx-flip-back { padding-inline:18px; }
+.nx-contact-rail .nx-flip-card.is-flipped .nx-flip-control { border-radius:0 0 12px 12px; background:var(--nx-surface); }
+.nx-contact-rail .nx-rail-outcome { border-radius:12px; }
+.nx-consent .nx-cookie-toast { top:calc(var(--header-h) + var(--space-tight)); bottom:auto; background:var(--nx-surface); color:var(--nx-text); }
+.nx-legal-section > .nx-legal { margin-top:0; }
+.nx-legal-section .nx-legal > h2 { margin-top:0; }
+.nx-legal-document #inicio .nx-legal { margin-top:var(--space-block); }
+@media(max-width:767px) {
+ .js .nx-flip-card--pain { --pain-front-size:max(300px,18em); height:var(--pain-front-size); min-height:0; grid-template-rows:minmax(0,1fr); }
+ .js .nx-flip-card--pain .nx-flip-front { padding:20px; gap:10px; }
+ .js .nx-flip-card--pain.is-flipped { height:auto; min-height:var(--pain-front-size); }
+ .nx-persona-cards.nx-persona-bento { gap:var(--space-tight); }
+ .nx-persona-bento .nx-flip-front { display:grid; grid-template-columns:24px minmax(0,1fr); align-content:start; align-items:start; gap:8px 12px; padding:16px; }
+ .nx-persona-bento .nx-card-title,.nx-persona-bento .nx-flip-card:first-child .nx-card-title { font-size:26px; }
+ .nx-persona-bento .nx-card-teaser { grid-column:2; max-width:none; }
+ .nx-persona-bento .nx-flip-control { min-height:44px; padding:12px 16px; }
+ .nx-persona-bento .nx-flip-card.is-flipped .nx-flip-back { padding:16px 16px 64px; }
 }
