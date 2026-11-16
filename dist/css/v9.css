@@ -8,3 +8,6 @@ summary::marker { content:''; }
 summary .nx-icon--chevron { margin-left:auto; transition:transform var(--dur-fast) var(--ease-out); }
 details[open] > summary .nx-icon--chevron { transform:rotate(90deg); }
 @media(prefers-reduced-motion:reduce) { summary .nx-icon--chevron { transition:none; } }
+
+/* R-1: background geometry stays inside the layout viewport, without body clipping. */
+#narrative-canvas,.nx-reading-progress,.nx-header-veil,.nx-ambient { left:0; right:0; width:100%; max-width:100%; }

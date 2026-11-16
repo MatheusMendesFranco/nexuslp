@@ -49,6 +49,7 @@ class Node {
   focus(){if(!this.closest('[hidden]'))this.ownerDocument.activeElement=this;}
   showModal(){this.open=true;this.querySelector('button')?.focus();}
   close(){this.open=false;this.dispatchEvent({type:'close',bubbles:false});}
+  get clientWidth(){return this===this.ownerDocument.documentElement?(this.ownerDocument.env.layoutWidth??this.ownerDocument.env.width):this._rect?.width||this.ownerDocument.env.width;}
   get clientHeight(){return this.tagName==='CANVAS'?this.ownerDocument.env.stableHeight:this._rect?.height||200;}
   get offsetHeight(){return this.clientHeight;}
   get scrollHeight(){return this.ownerDocument.height;}
@@ -64,11 +65,11 @@ function parse(html,parent,doc){
     else{const t=doc.createTextNode(decode(token));stack.at(-1).append(t);}
   }
 }
-function environment(html,{width=1440,height=900,reduced=false,noCanvas=false,storage=null,legacyStorage=null,storageReadError=false,storageWriteError=false,storageRemoveError=false,dateNow=Date.parse('2026-11-14T12:00:00.000Z')}={}){
+function environment(html,{width=1440,layoutWidth,height=900,reduced=false,noCanvas=false,storage=null,legacyStorage=null,storageReadError=false,storageWriteError=false,storageRemoveError=false,dateNow=Date.parse('2026-11-14T12:00:00.000Z')}={}){
   const storageEntries=new Map();
   if(storage!==null)storageEntries.set('nexus-consent',storage);
   if(legacyStorage!==null)storageEntries.set('nexus.consent.v1',legacyStorage);
-  const env={width,height,stableHeight:height,scrollY:0,noCanvas,now:0,dateNow,frames:new Map(),timers:new Map(),serial:0,draws:0,visibleClears:0,reloads:0,storageEntries,captureCanvas:false,canvasCalls:[]};
+  const env={width,layoutWidth,height,stableHeight:height,scrollY:0,noCanvas,now:0,dateNow,frames:new Map(),timers:new Map(),serial:0,draws:0,visibleClears:0,reloads:0,storageEntries,captureCanvas:false,canvasCalls:[]};
   Object.defineProperty(env,'storageValue',{get:()=>storageEntries.get('nexus-consent')??null});
   class TestDate extends Date {constructor(...args){super(...(args.length?args:[env.dateNow]));}static now(){return env.dateNow;}}
   const doc=new Node('#document',null);doc.ownerDocument=doc;doc.env=env;doc.height=10000;doc.hidden=false;doc.createElement=tag=>new Node(tag,doc);doc.createTextNode=text=>{const n=new Node('#text',doc);n._text=text;return n;};doc.createDocumentFragment=()=>new Node('#fragment',doc);

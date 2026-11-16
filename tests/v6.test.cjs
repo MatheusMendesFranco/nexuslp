@@ -23,6 +23,15 @@ test('V9: public HTML/CSS/JS has no text arrows, geometric emoji or pictographs 
  }
 });
 
+test('V9 R-1: Canvas uses layout width when innerWidth includes horizontal overflow',()=>{
+ for(const layoutWidth of [360,390,768,1440]){
+  const env=app({width:layoutWidth+8,layoutWidth},'index.html',true);env.flush(160);
+  const debug=env.window.NEXUS_DEBUG,canvas=env.document.querySelector('canvas');assert.equal(canvas.width,Math.round(layoutWidth*debug.dpr));
+  assert.equal(debug.idle,true);assert.ok([...debug.X,...debug.Y].every(Number.isFinite));
+  if(layoutWidth<900){const positions=debug.scenes.map(s=>s.a);env.height-=80;env.event('resize');env.flush(2);assert.deepEqual(debug.scenes.map(s=>s.a),positions,'Address bar changes keep scene geometry');}
+ }
+});
+
 test('V8.2: product identity is present in navigation, body, windows and metadata',()=>{
  for(const [code,route,name] of [['lf','linha-de-frente','Linha de Frente'],['bd','balcao-digital','Balcão Digital']]){
   const doc=environment(markup(route+'/index.html')).document;
