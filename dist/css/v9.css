@@ -112,3 +112,6 @@ main[id],main [id],.nx-anchor { scroll-margin-top:calc(var(--header-h) + 16px); 
 @media(min-width:768px) { :root { --space-section:96px; } }
 @media(min-width:1024px) { :root { --space-section:128px; } }
 .nx-hero .nx-eyebrow { color:var(--nx-cyan); opacity:1; }
+@media(min-width:768px) and (max-width:1023px) {
+ .js .nx-flip-card--pain, .js .nx-flip-card--pain.is-flipped { height:auto; min-height:0; }   /* tablet: frente sem área vazia */
+}
