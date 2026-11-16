@@ -13,3 +13,7 @@ Corrigida a extensão horizontal de 24 px do pseudo-elemento das etapas da home:
 ## Grupo 3 — T-1
 
 Balance em títulos/leads/frentes de card; pretty em parágrafos, listas e definições, com fallback nativo. As três órfãs explícitas recebem agrupamentos curtos sem quebra (`cada cliente.`, `quando quiser.`, `sua empresa.`), preservando o texto e evitando dependência de pretty em browsers antigos. As mensagens, nomes acessíveis e dados de CTA não mudam.
+
+## Grupo 4 — A-1
+
+Token de header 76 px desktop / 68 px mobile, incluindo safe area, usado no header e no scroll-margin de `#conteudo` e das âncoras internas (inclui cards e capítulos). Respiro de 16 px. Scroll-padding anterior zerado para não somar dois deslocamentos. Mantidos skip-link nativo, tabindex do main, foco das demos e dos painéis de consentimento.

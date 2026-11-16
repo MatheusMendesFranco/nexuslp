@@ -80,6 +80,7 @@
   --text-display: clamp(42px, 7vw, 113px);
 
   /* Rhythm */
+  --header-h: calc(76px + env(safe-area-inset-top,0px));
   --space-unit: 6px;
   --page-max: 1280px;
   --section-y: clamp(84px, 12vw, 180px);
@@ -100,3 +101,5 @@
   --my: 50%;
   --scroll: 0;
 }
+
+@media(max-width:860px) { :root { --header-h:calc(68px + env(safe-area-inset-top,0px)); } }

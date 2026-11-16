@@ -16,3 +16,8 @@ details[open] > summary .nx-icon--chevron { transform:rotate(90deg); }
 h1,h2,h3,.nx-lead,.nx-card-title,.nx-hero .nx-line { text-wrap:balance; }
 p,li,dt,dd { text-wrap:pretty; }
 .nx-nowrap { white-space:nowrap; }
+
+/* A-1: use a single offset, including the real header and safe area. */
+html { scroll-padding-top:0; }
+.nx-header { min-height:var(--header-h); }
+main[id],main [id],.nx-anchor { scroll-margin-top:calc(var(--header-h) + 16px); }
