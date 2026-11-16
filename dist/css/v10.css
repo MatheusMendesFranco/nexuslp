@@ -1,0 +1,2 @@
+/* V10: gradient ink needs room below the baseline, independently of font size. */
+.nx-product-name { line-height:1.12; padding-bottom:.12em; margin-bottom:-.12em; }
