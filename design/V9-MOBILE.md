@@ -21,3 +21,7 @@ Token de header 76 px desktop / 68 px mobile, incluindo safe area, usado no head
 ## Grupo 5 — P-1
 
 Logo com área mínima de 44 px e padding de toque; margem compensatória conserva a posição visual do símbolo e wordmark. Links do sumário jurídico com área mínima de 44 px, flex e alinhamento vertical, conservando conteúdo e destinos. Nenhum listener ou comportamento de navegação alterado.
+
+## Grupo 6 — S-1 / S-2 e ritmo B
+
+Escala section/block/tight: 72/32/12 px mobile, 96/40/16 tablet, 128/48/16 desktop. Seções, hero (header + block), capítulos, grades e janelas consomem os tokens; retiradas margens finais de 80 px das grades LF e alturas mínimas de viewport das cenas de demo. Botões, lógica e foco das demos não mudam. Faixas de produto com lista vertical numerada no mobile, sem etapa 05 isolada; links e claims com respiro consistente. Eyebrows sem traço decorativo oculto nem recuo vazio. Véus sem padding e leads alinhados à margem no mobile/tablet. Palavras do diferencial em lista vertical L4 no celular. Grupos de título da home centralizados como bloco no tablet, texto alinhado à esquerda, largura até 28ch. Teste valida o contrato de tokens e seu consumo, sem alegar medir CSS renderizado.

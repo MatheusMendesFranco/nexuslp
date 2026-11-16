@@ -25,3 +25,57 @@ main[id],main [id],.nx-anchor { scroll-margin-top:calc(var(--header-h) + 16px); 
 /* P-1: expand hit areas while keeping the wordmark's visual position. */
 .nx-logo { min-height:44px; min-width:44px; padding:10px 8px; margin-inline:-8px; }
 .nx-legal nav a[href^="#"] { display:flex; align-items:center; min-height:44px; padding-block:8px; }
+
+/* S-1 / S-2: one section, block and tight rhythm, including the hero. */
+.nx-section { min-height:0; padding-block:var(--space-section); }
+.nx-section.nx-hero,.nx-section[data-scene="hero"] { min-height:0; padding-top:calc(var(--header-h) + var(--space-block)); padding-bottom:var(--space-section); }
+.nx-section-intro { margin-bottom:var(--space-block); }
+.nx-chapter + .nx-chapter { margin-top:var(--space-block); }
+.nx-section-heading { padding-top:0; padding-bottom:var(--space-block); }
+.nx-product-connector { padding-block:var(--space-block); }
+.nx-between { padding-block:var(--space-block) 0; }
+.nx-hero-split,.nx-faq-layout { gap:var(--space-block); }
+.nx-prospect-cards { margin-block:var(--space-block) 0; gap:var(--space-tight); }
+.nx-operation-bento .nx-prospect-cards { margin:0; }
+.nx-pain-cards,.nx-trust.nx-bento,.nx-operation-bento { gap:var(--space-tight); }
+.nx-product-layout .nx-product-route { margin-top:0; }
+.nx-product-band .nx-flow-track,.nx-type-list,.nx-fact-strip,.nx-comparison,.nx-detail-rail,.nx-contact-rail,.nx-method.nx-method-cards,.nx-trust,.nx-faq,.nx-persona-cards { margin-top:var(--space-block); }
+.nx-product-band .nx-text-link { margin-top:var(--space-block); }
+.nx-product-band .nx-conclusion { margin-top:0; }
+.nx-product-band .nx-lead,.nx-signature { margin-top:var(--space-block); }
+.nx-product-band .nx-body,.nx-product-band .nx-micro,.nx-hero .nx-micro { margin-top:var(--space-tight); }
+.nx-product-band .nx-flow-track { margin-bottom:0; }
+.nx-section .nx-window,.nx-section .nx-demo-tabs { margin-top:var(--space-block); }
+.nx-example-stage > .nx-scene-content { min-height:0; }
+.nx-example-stage .nx-window { top:calc(var(--header-h) + var(--space-tight)); }
+.nx-hero .nx-cta,.nx-hero-product .nx-hero-copy > .nx-cta { margin-top:var(--space-block); }
+.nx-hero-product .nx-product-name { margin-top:var(--space-tight); }
+.nx-hero-product .nx-display.nx-product-claim { margin-top:var(--space-tight); }
+.nx-hero .nx-product-role,.nx-hero .nx-product-claim,.nx-hero-product .nx-hero-copy .nx-body { margin-top:var(--space-tight); }
+.nx-faq-intro { top:calc(var(--header-h) + var(--space-block)); }
+
+/* A hidden eyebrow rule must never reserve a leading empty flex item. */
+.nx-eyebrow { display:block; margin-bottom:var(--space-block); }
+.nx-eyebrow::before { display:none; }
+.nx-section-titlegroup .nx-h2 { margin-inline:auto; }
+.nx-section-titlegroup .nx-eyebrow { width:auto; }
+@media(min-width:1024px) {
+ .nx-section-titlegroup { text-align:center; }
+ .nx-section .nx-hero-preview,.nx-example-stage .nx-window { margin-top:0; }
+}
+@media(min-width:768px) and (max-width:1023px) {
+ [data-page="home"] .nx-section-intro,[data-page="home"] .nx-section-titlegroup,[data-page="home"] .nx-section-heading { font-size:clamp(32px,4.8vw,64px); max-width:28ch; margin-inline:auto; text-align:left; }
+ [data-page="home"] .nx-section-intro .nx-h2,[data-page="home"] .nx-section-titlegroup .nx-h2,[data-page="home"] .nx-section-heading .nx-h2 { max-width:none; margin-inline:0; text-align:left; }
+}
+@media(max-width:1023px) {
+ .nx-product-layout .nx-product-route { margin-top:var(--space-block); }
+ .nx-statement-band .nx-chapter { text-align:left; }
+ .nx-statement-band .nx-chapter .nx-h2,.nx-statement-band .nx-lead,.nx-statement-band .nx-body { margin-inline:0; }
+}
+@media(max-width:767px) {
+ .nx-product-band .nx-flow-track { grid-template-columns:minmax(0,1fr); gap:0; }
+ .nx-product-band .nx-flow-track li { display:grid; grid-template-columns:32px minmax(0,1fr); align-items:center; gap:var(--space-tight); padding-block:var(--space-tight); }
+ .nx-product-band .nx-flow-number { display:inline; margin:0; }
+ .nx-product-band .nx-flow-track li::before,.nx-product-band .nx-flow-track li::after { display:none; }
+ .nx-statement-band .nx-operation-words { display:flex; flex-direction:column; align-items:flex-start; gap:var(--space-tight); margin-top:var(--space-block); font:400 20px/1.4 var(--font-display); letter-spacing:-.01em; color:var(--nx-text); }
+}

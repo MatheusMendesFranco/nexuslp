@@ -32,6 +32,16 @@ test('V9 R-1: Canvas uses layout width when innerWidth includes horizontal overf
  }
 });
 
+test('V9: spacing tokens define the mobile/tablet/desktop contract and section/hero consume it',()=>{
+ const variables=withoutComments(fs.readFileSync(path.join(root,'css/variables.css'),'utf8'),'.css');
+ const css=withoutComments(fs.readFileSync(path.join(root,'css/v9.css'),'utf8'),'.css');
+ const values=name=>[...variables.matchAll(new RegExp('--space-'+name+':\\s*(\\d+)px','g'))].map(m=>Number(m[1]));
+ assert.deepEqual(values('section'),[72,96,128]);assert.deepEqual(values('block'),[32,40,48]);assert.deepEqual(values('tight'),[12,16]);
+ assert.match(css,/\.nx-section\s*\{[^}]*padding-block:var\(--space-section\)/);
+ assert.match(css,/\.nx-section\.nx-hero[^}]*padding-top:calc\(var\(--header-h\) \+ var\(--space-block\)\)[^}]*padding-bottom:var\(--space-section\)/);
+ for(const file of pages)assert.ok(environment(markup(file)).document.querySelector('link[href="/css/v9.css?v=9"]'));
+});
+
 test('V8.2: product identity is present in navigation, body, windows and metadata',()=>{
  for(const [code,route,name] of [['lf','linha-de-frente','Linha de Frente'],['bd','balcao-digital','Balcão Digital']]){
   const doc=environment(markup(route+'/index.html')).document;

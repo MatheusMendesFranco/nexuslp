@@ -80,6 +80,9 @@
   --text-display: clamp(42px, 7vw, 113px);
 
   /* Rhythm */
+  --space-section: 72px;
+  --space-block: 32px;
+  --space-tight: 12px;
   --header-h: calc(76px + env(safe-area-inset-top,0px));
   --space-unit: 6px;
   --page-max: 1280px;
@@ -103,3 +106,5 @@
 }
 
 @media(max-width:860px) { :root { --header-h:calc(68px + env(safe-area-inset-top,0px)); } }
+@media(min-width:768px) { :root { --space-section:96px; --space-block:40px; --space-tight:16px; } }
+@media(min-width:1024px) { :root { --space-section:128px; --space-block:48px; } }
