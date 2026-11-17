@@ -110,3 +110,17 @@ test('V10: Canvas caches CSS colors between frames and rebuilds on theme or syst
   const finalReads=env.styleReads;env.flush(50);assert.equal(env.styleReads,finalReads);assert.ok([...debug.X,...debug.Y].every(Number.isFinite));
  }
 });
+
+test('V10.2: light Canvas applies deep tones and reduced alpha on all pages without changing geometry',()=>{
+ for(const page of pages)for(const width of [360,1440]){
+  const env=setup({width},page,true);env.flush(160);const debug=env.window.NEXUS_DEBUG;
+  const scenes=debug.scenes.map(s=>[s.a,s.b]),nodes=debug.nodes;
+  assert.equal(debug.palette.alpha['sprite-core'],.55);assert.equal(debug.palette.alpha.edge,1);
+  env.captureCanvas=true;const version=debug.palette.version;env.window.NEXUS.theme.set('light');env.flush(160);
+  assert.equal(JSON.stringify(debug.palette.tones),JSON.stringify([[14,116,144],[37,99,235],[109,64,224]]));
+  assert.equal(debug.palette.alpha['sprite-core'],.3);assert.equal(debug.palette.alpha['sprite-outer'],.1);assert.equal(debug.palette.alpha.edge,.7);
+  assert.equal(debug.palette.version,version+1);assert.ok(env.canvasPaints.some(p=>p.property==='colorStop'&&p.value==='rgba(14,116,144,0.3)'));
+  assert.deepEqual(debug.scenes.map(s=>[s.a,s.b]),scenes);assert.equal(debug.nodes,nodes);assert.equal(debug.idle,true);assert.equal(env.reloads,0);
+  env.window.NEXUS.theme.set('dark');env.flush(160);assert.equal(debug.palette.alpha['sprite-core'],.55);assert.equal(debug.palette.tones[0].join(','),'32,214,231');
+ }
+});
