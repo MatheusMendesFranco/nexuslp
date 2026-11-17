@@ -80,3 +80,5 @@ body[data-product] .nx-cta:not(.nx-cta--ghost) { background:var(--prod-cta-gradi
  .nx-flip-card,.nx-cta,.nx-theme-toggle { border:1px solid ButtonText; }
  .nx-theme-toggle::before { border-color:ButtonText; }
 }
+/* Diretor: no tema claro o header usa o mesmo véu de largura total do escuro, sem caixa recortada. */
+.nx-header { background:none; border-bottom:0; }
