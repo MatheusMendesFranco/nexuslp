@@ -287,7 +287,7 @@
     --nx-canvas-tracer: 14,116,144;
     --nx-canvas-highlight: 11,18,32;
     --nx-canvas-ring: 14,116,144;
---nx-canvas-halo: 8,145,178;
+    --nx-canvas-halo: 8,145,178;
     --nx-canvas-sprite-core-alpha: 0.3;
     --nx-canvas-sprite-outer-alpha: 0.1;
     --nx-canvas-edge-alpha: 0.7;
@@ -392,7 +392,7 @@
   --nx-canvas-tracer: 14,116,144;
   --nx-canvas-highlight: 11,18,32;
   --nx-canvas-ring: 14,116,144;
---nx-canvas-halo: 8,145,178;
+  --nx-canvas-halo: 8,145,178;
   --nx-canvas-sprite-core-alpha: 0.3;
   --nx-canvas-sprite-outer-alpha: 0.1;
   --nx-canvas-edge-alpha: 0.7;

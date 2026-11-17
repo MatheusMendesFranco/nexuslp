@@ -31,6 +31,8 @@ test('V10: all component CSS colors depend on tokens; literal colors live only i
  for(const [name,rgb] of [['void','2,4,10'],['text','248,250,252'],['cyan','32,214,231'],['blue','47,123,255'],['violet','139,92,246']])assert.equal(darkVariables['--nx-'+name+'-rgb'],rgb);
  assert.equal(darkVariables['--nx-theme-color'],'#02040A');
  assert.match(css,/prefers-color-scheme:light/);assert.match(css,/:root:not\(\[data-theme\]\)/);assert.doesNotMatch(css,/V10: aguardando paleta/);
+ const automatic=parse(css.match(/:root:not\(\[data-theme\]\)\s*\{([\s\S]*?)\n  \}/)[1]);
+ assert.deepEqual(automatic,parse(css.match(/:root\[data-theme="light"\]\s*\{([\s\S]*?)\n\}/)[1]),'Pure-CSS system light and explicit light use identical tokens');
  for(const [name,value] of Object.entries({void:'#F3F6FB',text:'#0B1220',muted:'#3C4A63',surface:'#FFFFFF','surface-2':'#E6EDF7','lf-text':'#00677A','bd-text':'#5B34C9'}))assert.equal(lightVariables['--nx-'+name],value);
 });
 
@@ -134,4 +136,53 @@ test('V10.2: only deliberate theme actions emit theme_toggle after the appropria
  doc.querySelector('[data-theme-system]').click();assert.equal(events().length,2);assert.equal(events()[1].action,'system');
  env.setMedia('(prefers-color-scheme: light)',true);assert.equal(events().length,2,'OS changes are not interactions');
  doc.querySelector('[data-consent="accept"]').click();button.click();assert.ok(env.window.fbq.queue.some(args=>args[0]==='trackCustom'&&args[1]==='theme_toggle'));
+});
+
+test('V10.2: light text pairs, states and every sampled CTA segment meet WCAG AA',t=>{
+ const rgb=value=>{
+  if(value.startsWith('#')){let h=value.slice(1);if(h.length===3)h=[...h].map(c=>c+c).join('');return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16));}
+  const m=value.match(/^rgba?\(([^)]+)\)$/);assert.ok(m,'Color: '+value);return m[1].split(',').map(Number);
+ };
+ const composite=(front,back)=>{const a=front.length>3?front[3]:1;return front.slice(0,3).map((v,i)=>v*a+back[i]*(1-a));};
+ const luminance=values=>values.slice(0,3).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;}).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
+ const contrast=(a,b)=>{const x=luminance(a),y=luminance(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
+ const color=name=>rgb(lightVariables['--nx-'+name]);
+ const assertAA=(fore,back,label,limit=4.5)=>{const value=contrast(fore,back);assert.ok(value>=limit,label+': '+value.toFixed(4));return value;};
+ const surfaces=['void','void-soft','surface','surface-2'];
+ for(const fg of ['text','muted','dim','link','lf-text','bd-text','positive','label-text','caption-text'])for(const bg of surfaces)assertAA(color(fg),color(bg),fg+' on '+bg);
+ const minima={};
+ for(const name of ['cta-gradient','lf-cta-gradient','bd-cta-gradient']){
+  const stops=[...lightVariables['--nx-'+name].matchAll(/#[\da-f]{6}/gi)].map(m=>rgb(m[0]));assert.ok(stops.length>=2);
+  let minimum=Infinity;
+  for(let j=1;j<stops.length;j++)for(let i=0;i<=1000;i++){
+   const bg=stops[j-1].map((v,k)=>v+(stops[j][k]-v)*i/1000);minimum=Math.min(minimum,assertAA(color('ink-on-cta'),bg,name+' '+j+':'+i));
+  }
+  minima[name]=minimum;
+ }
+ for(const name of ['gradient-message','g-pulse','g-capture','g-link','g-build']){
+  const stops=[...lightVariables['--nx-'+name].matchAll(/#[\da-f]{6}/gi)].map(m=>rgb(m[0]));
+  for(const bg of ['void','void-soft','surface'])for(let j=1;j<stops.length;j++)for(let i=0;i<=100;i++)assertAA(stops[j-1].map((v,k)=>v+(stops[j][k]-v)*i/100),color(bg),name+' on '+bg);
+ }
+ // The brighter text gradient is forbidden on recessed SF2; current instances stay on page/white surfaces.
+ for(const page of pages)for(const stack of environment(read(page)).document.querySelectorAll('.nx-gradient-stack'))assert.equal(stack.closest('.nx-chat-bubble,.nx-typing'),null);
+ for(const product of ['lf','bd']){
+  const band=composite([...color(product+'-a'),.12],color('void')),chip=composite([...color(product+'-a'),.1],color('surface'));
+  assertAA(color(product+'-text'),band,product+' text on wash');assertAA(color('muted'),band,'muted on '+product+' wash');assertAA(color(product+'-text'),chip,product+' simulation chip');
+  const stops=[...lightVariables['--nx-'+product+'-gradient-text'].matchAll(/#[\da-f]{6}/gi)].map(m=>rgb(m[0]));for(const stop of stops)assertAA(stop,band,product+' title on wash');
+ }
+ assertAA(color('toast-text'),color('toast-bg'),'toast');assertAA(color('text'),composite(color('bubble-agent-bg'),color('surface')),'agent bubble');assertAA(color('text'),color('bubble-client-bg'),'client bubble');
+ assertAA(color('on-selection'),composite(color('selection-bg'),color('void')),'selection');
+ for(const bg of surfaces){assertAA(color('focus'),color(bg),'focus on '+bg,3);assertAA(color('border-strong'),color(bg),'interactive boundary on '+bg,3);}
+ t.diagnostic('CTA minima: '+Object.entries(minima).map(([name,value])=>name+' '+value.toFixed(4)+':1').join('; '));
+});
+
+test('V10.2: theme controls work with reduced motion while menu focus stays usable on all pages',()=>{
+ for(const page of pages){
+  const env=setup({width:360,light:true,reduced:true},page,true),doc=env.document;
+  assert.equal(env.window.NEXUS_DEBUG,undefined);assert.equal(doc.querySelector('[data-theme-toggle]').getAttribute('aria-label'),'Ativar tema escuro');
+  const menu=doc.querySelector('.nx-menu-btn');menu.click();assert.equal(doc.querySelector('#conteudo').inert,true);
+  const toggle=doc.querySelector('[data-theme-toggle]');toggle.focus();toggle.pressKey('Enter');assert.equal(env.window.NEXUS.theme.get().effective,'dark');assert.equal(doc.activeElement,toggle);
+  env.event('keydown',{key:'Escape'});assert.equal(doc.querySelector('#conteudo').inert,false);assert.equal(doc.activeElement,menu);
+  doc.querySelector('[data-theme-system]').focus();doc.querySelector('[data-theme-system]').pressKey('Enter');assert.equal(env.window.NEXUS.theme.get().effective,'light');assert.equal(doc.activeElement,toggle);assert.equal(env.reloads,0);
+ }
 });

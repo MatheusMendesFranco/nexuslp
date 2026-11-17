@@ -68,6 +68,13 @@ body[data-product] .nx-cta:not(.nx-cta--ghost) { background:var(--prod-cta-gradi
 .nx-cookie-table th,.nx-cookie-table td,.nx-cookie-option { border-color:var(--nx-border); }
 .nx-cookie-option input { accent-color:var(--nx-focus); }
 .nx-consent .nx-cookie-toast { background:var(--nx-toast-bg); color:var(--nx-toast-text); }
+/* The brand remains chromatic, with theme tokens instead of neon-only SVG stops. */
+.nx-logo svg stop:first-child { stop-color:var(--nx-cyan); }
+.nx-logo svg stop:nth-child(2) { stop-color:var(--nx-blue); }
+.nx-logo svg stop:last-child { stop-color:var(--nx-violet); }
+.nx-logo svg circle { fill:var(--nx-blue); }
+.nx-logo svg circle:first-of-type { fill:var(--nx-cyan); }
+.nx-logo svg circle:last-of-type { fill:var(--nx-violet); }
 @media(forced-colors:active) {
  .nx-product-name,.nx-gradient-stack { background:none; color:CanvasText; -webkit-text-fill-color:CanvasText; }
  .nx-flip-card,.nx-cta,.nx-theme-toggle { border:1px solid ButtonText; }

@@ -40,27 +40,38 @@ async function main(){
   const checkOverflow=async label=>{const sizes=await overflow();assert.ok(sizes.scroll<=sizes.width, label+' overflow: '+JSON.stringify(sizes));};
   const screenshot=async name=>{const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});await fs.writeFile(path.join(output,name+'.png'),Buffer.from(shot.data,'base64'));};
   const reports=[];
-  for(const width of [360,390,768,1024,1440])for(const route of ['/','/linha-de-frente/','/balcao-digital/','/privacidade/']){
-   console.log('Checking '+width+' '+route);
-   const label=width+' '+route;errors.length=0;requests.length=0;
+  for(const mode of ['dark','light'])for(const width of [360,390,768,1024,1440])for(const route of ['/','/linha-de-frente/','/balcao-digital/','/privacidade/']){
+   console.log('Checking '+mode+' '+width+' '+route);
+   const label=mode+' '+width+' '+route;errors.length=0;requests.length=0;
    await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});
-   await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+   await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'},{name:'prefers-color-scheme',value:mode}]});
    await call('Storage.clearDataForOrigin',{origin:base,storageTypes:'local_storage,cookies'});
    await call('Page.navigate',{url:base+route});
    for(let i=0;i<80;i++){if(await evaluate("document.readyState==='complete' && !!window.NEXUS?.field"))break;await wait(50);}
    await evaluate('document.fonts.ready');await wait(150);
+   assert.equal(await evaluate('window.NEXUS.theme.get().effective'),mode,label+' system theme');
+   assert.equal(await evaluate('document.documentElement.hasAttribute("data-theme")'),false,label+' implicit system');
+   const targets=await evaluate(`(() => {const w=document.documentElement.clientWidth;return [...document.querySelectorAll('.nx-header a,.nx-header button')].filter(el=>getComputedStyle(el).display!=='none').map(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,height:r.height,limit:w}})})()`);
+   assert.ok(targets.every(r=>r.left>=-1&&r.right<=r.limit+1),label+' header fits '+JSON.stringify(targets));
+   const toggleSize=await evaluate("document.querySelector('[data-theme-toggle]').getBoundingClientRect().height");assert.ok(toggleSize>=(width<=860?44:40),label+' theme target');
+   await evaluate("window.__v10qa='alive';document.querySelector('[data-theme-toggle]').click()");await wait(210);
+   assert.equal(await evaluate('window.NEXUS.theme.get().effective'),mode==='dark'?'light':'dark');
+   assert.equal(await evaluate("localStorage.getItem('nx-theme')"),mode==='dark'?'light':'dark');
+   await evaluate("document.querySelector('[data-theme-system]').focus();document.querySelector('[data-theme-system]').click()");await wait(210);
+   assert.equal(await evaluate("window.__v10qa"),'alive',label+' no reload');
+   assert.ok(await evaluate("document.activeElement.matches('[data-theme-toggle]') && !document.documentElement.hasAttribute('data-theme') && localStorage.getItem('nx-theme')===null"));
    await checkOverflow(label+' banner');
    const noPixel=await evaluate("!document.querySelector('#nexus-meta-pixel') && typeof window.fbq==='undefined'");assert.ok(noPixel,label+' early pixel');
    assert.ok(!requests.some(url=>/facebook|fbevents/.test(url)),label+' marketing network request');
    const bannerVisible=await evaluate("!document.querySelector('.nx-cookie-banner').hidden");
    if(bannerVisible){await evaluate("document.querySelector('[data-consent=reject]').click()");await wait(3600);}
    await checkOverflow(label+' accepted layout');
-   if(width===360||width===1440)await screenshot((route==='/'?'home':route.split('/')[1])+'-'+width+'-hero');
+   if(width===360||width===1440)await screenshot(mode+'-'+(route==='/'?'home':route.split('/')[1])+'-'+width+'-hero');
    const ids=await evaluate("[...document.querySelectorAll('main section[id]')].map(e=>e.id)");
    for(const section of ids){
     await evaluate(`document.getElementById(${JSON.stringify(section)}).scrollIntoView({block:'start',behavior:'instant'})`);await wait(90);
     await checkOverflow(label+' #'+section);
-    if((width===360||width===1440)&&['solucao-lf','solucao-bd','metodo','persona','lf-pesquisa','lf-percurso','lf-acompanhamento','duvidas'].includes(section))await screenshot((route==='/'?'home':route.split('/')[1])+'-'+width+'-'+section);
+    if((width===360||width===1440)&&['solucao-lf','solucao-bd','metodo','persona','lf-pesquisa','lf-percurso','lf-acompanhamento','duvidas'].includes(section))await screenshot(mode+'-'+(route==='/'?'home':route.split('/')[1])+'-'+width+'-'+section);
    }
    // Native keyboard activation, open every retained flip, and exercise its content size.
    const count=await evaluate("document.querySelectorAll('[data-flip]').length");
@@ -69,6 +80,7 @@ async function main(){
     await call('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});await call('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
     await wait(400);assert.ok(await evaluate(`document.querySelectorAll('[data-flip]')[${i}].getAttribute('aria-expanded')==='true'`),label+' keyboard flip '+i);
     await checkOverflow(label+' flip '+i);
+    if(mode==='light')assert.equal(await evaluate(`(() => {const b=document.querySelectorAll('[data-flip]')[${i}];return getComputedStyle(document.getElementById(b.getAttribute('aria-controls'))).backgroundColor})()`),'rgb(255, 255, 255)',label+' light back '+i);
    }
    // Preference opener returns focus to the precise button after closing.
    assert.ok(await evaluate(`(() => {const b=document.querySelector('[data-cookie-preferences]');b.focus();b.click();const d=document.querySelector('dialog');if(!d.contains(document.activeElement))return false;d.querySelector('[data-consent=close]').click();return true})()`));
@@ -78,17 +90,17 @@ async function main(){
     await evaluate("document.querySelector('[data-lf-start]').focus();document.querySelector('[data-lf-start]').click()");assert.ok(await evaluate("document.activeElement.matches('[data-lf-next]')"));
     await evaluate("for(let i=0;i<10&&!document.querySelector('[data-lf-next]').hidden;i++)document.querySelector('[data-lf-next]').click()");assert.ok(await evaluate("document.activeElement.matches('[data-lf-reset]')"));
    }
-   assert.deepEqual(errors,[],label+' console/network');reports.push({width,route,flips:count,consoleErrors:errors.length});
+   assert.deepEqual(errors,[],label+' console/network');reports.push({mode,width,route,flips:count,consoleErrors:errors.length});
   }
   // Repeat product/method interactions with the browser's reduced-motion preference.
-  for(const route of ['/','/linha-de-frente/','/balcao-digital/']){
-   await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+  for(const mode of ['dark','light'])for(const route of ['/','/linha-de-frente/','/balcao-digital/']){
+   await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'},{name:'prefers-color-scheme',value:mode}]});
    await call('Page.navigate',{url:base+route});await wait(300);
    assert.ok(await evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches && !document.documentElement.classList.contains('nx-live')"));
    await evaluate("document.querySelector('[data-flip]').click()");
    const transforms=await evaluate("[...document.querySelectorAll('.nx-flip-front,.nx-flip-back')].map(e=>getComputedStyle(e).transform)");assert.ok(transforms.every(t=>t==='none'));
   }
-  const contrast=await evaluate(`(() => {const css=getComputedStyle(document.documentElement);const lum=h=>{const v=h.trim().replace('#','').match(/../g).map(x=>parseInt(x,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return v[0]*.2126+v[1]*.7152+v[2]*.0722};const bg=lum(css.getPropertyValue('--nx-void'));return ['--nx-lf-text','--nx-bd-text','--nx-lf-a','--nx-lf-b','--nx-bd-a','--nx-bd-b'].map(token=>({token,ratio:(lum(css.getPropertyValue(token))+.05)/(bg+.05)}))})()`);
+  const contrast=await evaluate(`(() => {const css=getComputedStyle(document.documentElement);const lum=h=>{const v=h.trim().replace('#','').match(/../g).map(x=>parseInt(x,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return v[0]*.2126+v[1]*.7152+v[2]*.0722};const bg=lum(css.getPropertyValue('--nx-void'));return ['--nx-lf-text','--nx-bd-text','--nx-text','--nx-muted','--nx-dim','--nx-link'].map(token=>{const fg=lum(css.getPropertyValue(token));return {token,ratio:(Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05)}})})()`);
   contrast.forEach(item=>assert.ok(item.ratio>=4.5,item.token+' contrast '+item.ratio));
   await fs.writeFile(path.join(output,'report.json'),JSON.stringify({reports,contrast},null,2));
   console.log(JSON.stringify({pages:reports.length,widths:[360,390,768,1024,1440],consoleErrors:0,overflow:0,reducedMotion:'PASS',contrast,output},null,2));
