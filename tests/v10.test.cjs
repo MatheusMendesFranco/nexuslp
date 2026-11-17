@@ -52,6 +52,8 @@ test('V10: keyboard toggle persists light/dark and footer reset follows the syst
  for(const page of pages){
   const env=setup({},page),doc=env.document,button=doc.querySelector('[data-theme-toggle]');
   assert.equal(doc.querySelectorAll('[data-theme-toggle]').length,1);assert.equal(env.window.NEXUS.theme.get().preference,'system');
+  assert.equal(button.closest('.nx-header-actions').querySelectorAll('a,button')[0],button,'Toggle precedes WhatsApp in the header');
+  assert.equal(button.id,'nx-theme-toggle');assert.equal(button.querySelectorAll('[data-theme-icon]').length,2);
   assert.equal(doc.querySelector('[data-theme-status]').textContent,'');button.focus();
   for(const preference of ['light','dark']){
    button.pressKey('Enter');assert.equal(env.window.NEXUS.theme.get().preference,preference);

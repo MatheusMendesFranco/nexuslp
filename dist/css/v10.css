@@ -2,5 +2,20 @@
 .nx-product-name { line-height:1.12; padding-bottom:.12em; margin-bottom:-.12em; }
 .nx-product-tag { display:flex; margin-bottom:clamp(16px,2vw,28px); }
 .nx-hero-product .nx-product-name { margin-top:0; }
-/* Temporary, keyboard-accessible placement; final position/style awaits the study. */
-.nx-footer .nx-theme-toggle { gap:8px; padding:8px 12px; min-height:44px; border:1px solid rgba(var(--nx-border-rgb),.3); border-radius:12px; color:var(--nx-text); text-decoration:none; }
+/* Destination icon in the header; only the system reset remains in the footer. */
+.nx-theme-toggle { position:relative; display:inline-flex; align-items:center; justify-content:center; flex:none; width:40px; height:40px; min-width:40px; min-height:40px; padding:0; border:1px solid var(--nx-border); border-radius:50%; background:var(--nx-transparent); color:var(--nx-muted); cursor:pointer; }
+.nx-theme-toggle .nx-icon { width:20px; height:20px; }
+.nx-theme-toggle:hover { color:var(--nx-text); border-color:var(--nx-border-strong); }
+.nx-theme-toggle:focus-visible { outline:2px solid var(--nx-focus); outline-offset:2px; }
+html:not(.js) .nx-theme-toggle { display:none; }
+body,.nx-header,.nx-window-bar,.nx-cookie-banner,.nx-cookie-dialog,.nx-footer,.nx-theme-toggle { transition:background-color 180ms var(--ease-out),color 180ms var(--ease-out),border-color 180ms var(--ease-out); }
+@media(max-width:860px) {
+ .nx-header { gap:8px; }
+ .nx-header-actions { gap:6px; }
+ .nx-header-actions .nx-cta--ghost { padding-inline:12px; font-size:13px; letter-spacing:0; }
+ .nx-theme-toggle { width:44px; height:44px; min-width:44px; min-height:44px; border:0; }
+ .nx-theme-toggle::before { content:''; position:absolute; inset:2px; border:1px solid var(--nx-border); border-radius:50%; pointer-events:none; }
+ .nx-theme-toggle:hover::before { border-color:var(--nx-border-strong); }
+}
+@media(max-width:360px) { .nx-header { gap:6px; } .nx-header .nx-logo { font-size:14px; gap:8px; letter-spacing:.12em; } }
+@media(prefers-reduced-motion:reduce) { body,.nx-header,.nx-window-bar,.nx-cookie-banner,.nx-cookie-dialog,.nx-footer,.nx-theme-toggle { transition:none; } }

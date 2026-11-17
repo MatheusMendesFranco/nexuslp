@@ -65,7 +65,7 @@
     menu.addEventListener('click', e => { if (e.target.closest('a')) set(false); });
     addEventListener('keydown', e => {
       if (e.key === 'Tab' && menu.classList.contains('is-open')) {
-        const items = [...$$('.nx-header a, .nx-menu-btn'), ...$$('a', menu)];
+        const items = [...$$('.nx-header a, .nx-header button'), ...$$('a', menu)];
         const first = items[0], last = items[items.length - 1];
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
         else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
