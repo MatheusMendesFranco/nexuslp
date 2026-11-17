@@ -82,3 +82,25 @@ body[data-product] .nx-cta:not(.nx-cta--ghost) { background:var(--prod-cta-gradi
 }
 /* Diretor: no tema claro o header usa o mesmo véu de largura total do escuro, sem caixa recortada. */
 .nx-header { background:none; border-bottom:0; }
+/* Diretor (revisão V10, M-1): no tema claro, a área fora da faixa de gradiente não pode deixar o fundo claro
+   aparecer através do texto semitransparente; uma camada sólida de tinta fica por baixo. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  :root[data-theme="light"] .nx-gradient-stack {
+    background-image:
+      linear-gradient(90deg, var(--nx-text) calc(var(--gb) - 14%), rgba(var(--nx-text-rgb),calc(1 - var(--ga))) var(--gb), rgba(var(--nx-text-rgb),calc(1 - var(--ga))) var(--gf), var(--nx-text) calc(var(--gf) + 14%)),
+      var(--g-img, var(--nx-gradient-message)),
+      linear-gradient(var(--nx-text), var(--nx-text));
+    background-size: 100% 100%, 150% 100%, 100% 100%;
+    background-position: 0 0, calc(var(--gx) + var(--hx)) 50%, 0 0;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .nx-gradient-stack {
+      background-image:
+        linear-gradient(90deg, var(--nx-text) calc(var(--gb) - 14%), rgba(var(--nx-text-rgb),calc(1 - var(--ga))) var(--gb), rgba(var(--nx-text-rgb),calc(1 - var(--ga))) var(--gf), var(--nx-text) calc(var(--gf) + 14%)),
+        var(--g-img, var(--nx-gradient-message)),
+        linear-gradient(var(--nx-text), var(--nx-text));
+      background-size: 100% 100%, 150% 100%, 100% 100%;
+      background-position: 0 0, calc(var(--gx) + var(--hx)) 50%, 0 0;
+    }
+  }
+}
