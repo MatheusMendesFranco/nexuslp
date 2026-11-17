@@ -1834,6 +1834,7 @@
 
   refreshPalette();
   addEventListener('nx:theme',refreshPalette);
+  addEventListener('nx:themechange',refreshPalette);
   matchMedia('(prefers-color-scheme: light)').addEventListener('change',refreshPalette);
   resizeCanvas();
   measure();

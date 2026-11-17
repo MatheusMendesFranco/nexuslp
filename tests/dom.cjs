@@ -23,6 +23,7 @@ class Node {
   contains(node){for(let n=node;n;n=n.parentElement)if(n===this)return true;return false;}
   append(...children){for(const child of children){if(child.tagName==='#FRAGMENT'){this.append(...child.childNodes);continue;}child.parentElement=this;this.childNodes.push(child);}}
   appendChild(c){this.append(c);return c;}
+  remove(){if(this.parentElement){this.parentElement.childNodes=this.parentElement.childNodes.filter(child=>child!==this);this.parentElement=null;}}
   replaceChildren(...cs){this.childNodes=[];this.append(...cs);}
   replaceChild(next,old){const at=this.childNodes.indexOf(old);const nodes=next.tagName==='#FRAGMENT'?next.childNodes:[next];this.childNodes.splice(at,1,...nodes);nodes.forEach(n=>n.parentElement=this);}
   matches(selector){
@@ -65,11 +66,12 @@ function parse(html,parent,doc){
     else{const t=doc.createTextNode(decode(token));stack.at(-1).append(t);}
   }
 }
-function environment(html,{width=1440,layoutWidth,height=900,reduced=false,light=false,noCanvas=false,storage=null,legacyStorage=null,themeStorage=null,cssVariables={},storageReadError=false,storageWriteError=false,storageRemoveError=false,dateNow=Date.parse('2026-11-14T12:00:00.000Z')}={}){
+function environment(html,{width=1440,layoutWidth,height=900,reduced=false,light=false,noCanvas=false,storage=null,legacyStorage=null,themeStorage=null,legacyThemeStorage=null,cssVariables={},themeVariables={},storageReadError=false,storageWriteError=false,storageRemoveError=false,dateNow=Date.parse('2026-11-14T12:00:00.000Z')}={}){
   const storageEntries=new Map();
   if(storage!==null)storageEntries.set('nexus-consent',storage);
   if(legacyStorage!==null)storageEntries.set('nexus.consent.v1',legacyStorage);
-  if(themeStorage!==null)storageEntries.set('nexus-theme',themeStorage);
+  if(themeStorage!==null)storageEntries.set('nx-theme',themeStorage);
+  if(legacyThemeStorage!==null)storageEntries.set('nexus-theme',legacyThemeStorage);
   const env={width,layoutWidth,height,stableHeight:height,scrollY:0,noCanvas,now:0,dateNow,frames:new Map(),timers:new Map(),serial:0,draws:0,visibleClears:0,reloads:0,storageEntries,captureCanvas:false,canvasCalls:[],canvasPaints:[]};
   Object.defineProperty(env,'storageValue',{get:()=>storageEntries.get('nexus-consent')??null});
   env.cssVariables={...cssVariables};env.styleReads=0;
@@ -93,7 +95,7 @@ function environment(html,{width=1440,layoutWidth,height=900,reduced=false,light
   env.setMedia=(query,matches)=>matchMedia(query).dispatch(matches);
   const win={document:doc,location:{pathname:'/',search:'?nxdebug',hostname:'localhost',reload:()=>env.reloads++},console,Date:TestDate,Math,Set,Map,WeakMap,Float32Array,Uint8Array,Uint16Array,Int16Array,
     performance:{now:()=>env.now},devicePixelRatio:2,matchMedia,
-    getComputedStyle:el=>{if(el===doc.documentElement)env.styleReads++;return {fontSize:'48px',getPropertyValue:name=>el.style[name]||env.cssVariables[name]||''};},getSelection:()=>({isCollapsed:true,rangeCount:0}),
+    getComputedStyle:el=>{if(el===doc.documentElement)env.styleReads++;return {fontSize:'48px',getPropertyValue:name=>{const mode=doc.documentElement.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');return el.style[name]||env.cssVariables[name]||themeVariables[mode]?.[name]||'';}};},getSelection:()=>({isCollapsed:true,rangeCount:0}),
     requestAnimationFrame:fn=>{const id=++env.serial;env.frames.set(id,fn);return id;},cancelAnimationFrame:id=>env.frames.delete(id),
     setTimeout:(fn,delay)=>{const id=++env.serial;env.timers.set(id,{fn,at:env.dateNow+delay});return id;},clearTimeout:id=>env.timers.delete(id),CustomEvent:class{constructor(type,init={}){this.type=type;this.detail=init.detail;this.bubbles=false;}},
     ResizeObserver:class{constructor(fn){this.fn=fn;}observe(){}},IntersectionObserver:class{constructor(fn){this.fn=fn;}observe(target){this.fn([{target,isIntersecting:true}]);}},
