@@ -2,3 +2,5 @@
 .nx-product-name { line-height:1.12; padding-bottom:.12em; margin-bottom:-.12em; }
 .nx-product-tag { display:flex; margin-bottom:clamp(16px,2vw,28px); }
 .nx-hero-product .nx-product-name { margin-top:0; }
+/* Temporary, keyboard-accessible placement; final position/style awaits the study. */
+.nx-footer .nx-theme-toggle { gap:8px; padding:8px 12px; min-height:44px; border:1px solid rgba(var(--nx-border-rgb),.3); border-radius:12px; color:var(--nx-text); text-decoration:none; }

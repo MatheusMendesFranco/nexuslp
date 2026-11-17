@@ -65,24 +65,35 @@ function parse(html,parent,doc){
     else{const t=doc.createTextNode(decode(token));stack.at(-1).append(t);}
   }
 }
-function environment(html,{width=1440,layoutWidth,height=900,reduced=false,noCanvas=false,storage=null,legacyStorage=null,storageReadError=false,storageWriteError=false,storageRemoveError=false,dateNow=Date.parse('2026-11-14T12:00:00.000Z')}={}){
+function environment(html,{width=1440,layoutWidth,height=900,reduced=false,light=false,noCanvas=false,storage=null,legacyStorage=null,themeStorage=null,cssVariables={},storageReadError=false,storageWriteError=false,storageRemoveError=false,dateNow=Date.parse('2026-11-14T12:00:00.000Z')}={}){
   const storageEntries=new Map();
   if(storage!==null)storageEntries.set('nexus-consent',storage);
   if(legacyStorage!==null)storageEntries.set('nexus.consent.v1',legacyStorage);
-  const env={width,layoutWidth,height,stableHeight:height,scrollY:0,noCanvas,now:0,dateNow,frames:new Map(),timers:new Map(),serial:0,draws:0,visibleClears:0,reloads:0,storageEntries,captureCanvas:false,canvasCalls:[]};
+  if(themeStorage!==null)storageEntries.set('nexus-theme',themeStorage);
+  const env={width,layoutWidth,height,stableHeight:height,scrollY:0,noCanvas,now:0,dateNow,frames:new Map(),timers:new Map(),serial:0,draws:0,visibleClears:0,reloads:0,storageEntries,captureCanvas:false,canvasCalls:[],canvasPaints:[]};
   Object.defineProperty(env,'storageValue',{get:()=>storageEntries.get('nexus-consent')??null});
+  env.cssVariables={...cssVariables};env.styleReads=0;
   class TestDate extends Date {constructor(...args){super(...(args.length?args:[env.dateNow]));}static now(){return env.dateNow;}}
   const doc=new Node('#document',null);doc.ownerDocument=doc;doc.env=env;doc.height=10000;doc.hidden=false;doc.createElement=tag=>new Node(tag,doc);doc.createTextNode=text=>{const n=new Node('#text',doc);n._text=text;return n;};doc.createDocumentFragment=()=>new Node('#fragment',doc);
   parse(html,doc,doc);doc.documentElement=doc.querySelector('html');doc.body=doc.querySelector('body');doc.head=doc.querySelector('head');doc.activeElement=doc.body;
   let top=0;doc.querySelectorAll('[data-scene]').forEach(sc=>{sc._top=top;sc._height=Math.max(height,sc.querySelectorAll('.nx-chapter').length*height*.9+height);top+=sc._height;});doc.height=Math.max(height,top+300);
   env.canvasContext=el=>new Proxy({}, {get:(obj,key)=>{
     if(key in obj)return obj[key];
-    return (...args)=>{for(const a of args)if(typeof a==='number')assert.ok(Number.isFinite(a),'Canvas coordinate must be finite');if(env.captureCanvas&&['moveTo','lineTo','arc','ellipse','createRadialGradient'].includes(key))env.canvasCalls.push({method:key,args});if(key==='clearRect'&&el.id==='narrative-canvas')env.visibleClears++;if(key==='drawImage'&&el.id==='narrative-canvas')env.draws++;if(String(key).startsWith('create'))return {addColorStop(){}};};
-  },set:(obj,k,v)=>{if(typeof v==='number')assert.ok(Number.isFinite(v));obj[k]=v;return true;}});
+    return (...args)=>{for(const a of args)if(typeof a==='number')assert.ok(Number.isFinite(a),'Canvas coordinate must be finite');if(env.captureCanvas&&['moveTo','lineTo','arc','ellipse','createRadialGradient'].includes(key))env.canvasCalls.push({method:key,args});if(key==='clearRect'&&el.id==='narrative-canvas')env.visibleClears++;if(key==='drawImage'&&el.id==='narrative-canvas')env.draws++;if(String(key).startsWith('create'))return {addColorStop(offset,value){if(env.captureCanvas)env.canvasPaints.push({property:'colorStop',offset,value});}};};
+  },set:(obj,k,v)=>{if(typeof v==='number')assert.ok(Number.isFinite(v));if(env.captureCanvas&&['fillStyle','strokeStyle'].includes(k)&&typeof v==='string')env.canvasPaints.push({property:k,value:v});obj[k]=v;return true;}});
   const listeners={};
+  const media=new Map();
+  function matchMedia(query){
+    if(!media.has(query)){
+      const handlers=[];
+      media.set(query,{matches:query.includes('reduced-motion')?reduced:query.includes('prefers-color-scheme')?light:query.includes('pointer:fine')?width>=900:query.includes('min-width')?width>=861:false,addEventListener(type,fn){if(type==='change')handlers.push(fn);},dispatch(matches){this.matches=matches;handlers.forEach(fn=>fn({matches,media:query}));}});
+    }
+    return media.get(query);
+  }
+  env.setMedia=(query,matches)=>matchMedia(query).dispatch(matches);
   const win={document:doc,location:{pathname:'/',search:'?nxdebug',hostname:'localhost',reload:()=>env.reloads++},console,Date:TestDate,Math,Set,Map,WeakMap,Float32Array,Uint8Array,Uint16Array,Int16Array,
-    performance:{now:()=>env.now},devicePixelRatio:2,matchMedia:query=>({matches:query.includes('reduced-motion')?reduced:query.includes('pointer:fine')?width>=900:query.includes('min-width')?width>=861:false,addEventListener(){}}),
-    getComputedStyle:()=>({fontSize:'48px'}),getSelection:()=>({isCollapsed:true,rangeCount:0}),
+    performance:{now:()=>env.now},devicePixelRatio:2,matchMedia,
+    getComputedStyle:el=>{if(el===doc.documentElement)env.styleReads++;return {fontSize:'48px',getPropertyValue:name=>el.style[name]||env.cssVariables[name]||''};},getSelection:()=>({isCollapsed:true,rangeCount:0}),
     requestAnimationFrame:fn=>{const id=++env.serial;env.frames.set(id,fn);return id;},cancelAnimationFrame:id=>env.frames.delete(id),
     setTimeout:(fn,delay)=>{const id=++env.serial;env.timers.set(id,{fn,at:env.dateNow+delay});return id;},clearTimeout:id=>env.timers.delete(id),CustomEvent:class{constructor(type,init={}){this.type=type;this.detail=init.detail;this.bubbles=false;}},
     ResizeObserver:class{constructor(fn){this.fn=fn;}observe(){}},IntersectionObserver:class{constructor(fn){this.fn=fn;}observe(target){this.fn([{target,isIntersecting:true}]);}},

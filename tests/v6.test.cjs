@@ -8,7 +8,7 @@ const root=path.resolve(__dirname,'../dist');
 const source=name=>fs.readFileSync(path.join(root,'js',name+'.js'),'utf8');
 const pages=['index.html','linha-de-frente/index.html','balcao-digital/index.html','privacidade/index.html'];
 const markup=file=>fs.readFileSync(path.join(root,file),'utf8');
-function app(options={},file='index.html',engine=false){const env=environment(markup(file),options);env.window.location.pathname=file==='index.html'?'/':'/'+file.replace('index.html','');for(const script of ['whatsapp','consent','track','content','experience',...(engine?['interactions']:[])])env.run(source(script));return env;}
+function app(options={},file='index.html',engine=false){const env=environment(markup(file),options);env.window.location.pathname=file==='index.html'?'/':'/'+file.replace('index.html','');env.run(env.document.querySelector('#nx-theme-init').textContent);for(const script of ['theme','whatsapp','consent','track','content','experience',...(engine?['interactions']:[])])env.run(source(script));return env;}
 const saved=(measurement,marketing)=>JSON.stringify({version:1,measurement,marketing,updatedAt:'2026-11-14T00:00:00.000Z'});
 
 test('V9: public HTML/CSS/JS has no text arrows, geometric emoji or pictographs outside comments',()=>{
@@ -39,7 +39,7 @@ test('V9: spacing tokens define the mobile/tablet/desktop contract and section/h
  assert.deepEqual(values('section'),[72,96,128]);assert.deepEqual(values('block'),[32,40,48]);assert.deepEqual(values('tight'),[12,16]);
  assert.match(css,/\.nx-section\s*\{[^}]*padding-block:var\(--space-section\)/);
  assert.match(css,/\.nx-section\.nx-hero[^}]*padding-top:calc\(var\(--header-h\) \+ var\(--space-block\)\)[^}]*padding-bottom:var\(--space-section\)/);
- for(const file of pages)assert.ok(environment(markup(file)).document.querySelector('link[href="/css/v9.css?v=9"]'));
+ for(const file of pages)assert.ok(environment(markup(file)).document.querySelector('link[href^="/css/v9.css?"]'));
 });
 
 test('V9 P-2: privacy introduction and sixteen legal sections are siblings with intact anchors',()=>{

@@ -31,6 +31,42 @@
   --nx-surface: #0B1220;
   --nx-surface-2: #111B2E;
 
+  /* V10: paired color channels preserve all current alpha expressions. */
+  --nx-void-rgb: 2,4,10;
+  --nx-void-soft-rgb: 5,7,13;
+  --nx-surface-rgb: 11,18,32;
+  --nx-surface-2-rgb: 17,27,46;
+  --nx-text-rgb: 248,250,252;
+  --nx-muted-rgb: 168,179,199;
+  --nx-dim-rgb: 111,124,149;
+  --nx-blue-rgb: 47,123,255;
+  --nx-cyan-rgb: 32,214,231;
+  --nx-violet-rgb: 139,92,246;
+  --nx-positive-rgb: 45,216,129;
+  --nx-ice-rgb: 125,211,252;
+  --nx-white-rgb: 255,255,255;
+  --nx-black-rgb: 0,0,0;
+  --nx-veil-rgb: var(--nx-void-rgb);
+  --nx-border-rgb: var(--nx-muted-rgb);
+  --nx-shadow-rgb: var(--nx-black-rgb);
+  --nx-white: #FFFFFF;
+  --nx-black: #000000;
+  --nx-ice: #7DD3FC;
+  --nx-transparent: transparent;
+  --nx-on-cta: var(--nx-void);
+  --nx-on-selection: var(--nx-white);
+  --nx-theme-color: var(--nx-void);
+  --nx-theme-mode: dark;
+  color-scheme: dark;
+
+  /* Canvas channels are read only on initialization and theme changes. */
+  --nx-canvas-node: var(--nx-cyan-rgb);
+  --nx-canvas-link: var(--nx-blue-rgb);
+  --nx-canvas-accent: var(--nx-violet-rgb);
+  --nx-canvas-tracer: 125,246,255;
+  --nx-canvas-highlight: 230,252,255;
+  --nx-canvas-ring: var(--nx-ice-rgb);
+
   /* Type */
   --nx-text: #F8FAFC;
   --nx-muted: #A8B3C7;
@@ -108,3 +144,10 @@
 @media(max-width:860px) { :root { --header-h:calc(68px + env(safe-area-inset-top,0px)); } }
 @media(min-width:768px) { :root { --space-section:96px; --space-block:40px; --space-tight:16px; } }
 @media(min-width:1024px) { :root { --space-section:128px; --space-block:48px; } }
+
+/* V10: aguardando paleta. Light currently retains the approved dark colors. */
+@media(prefers-color-scheme:light) {
+  :root:not([data-theme="dark"]) { --nx-theme-mode:light; color-scheme:dark; }
+}
+:root[data-theme="light"] { /* V10: aguardando paleta */ --nx-theme-mode:light; color-scheme:dark; }
+:root[data-theme="dark"] { --nx-theme-mode:dark; color-scheme:dark; }

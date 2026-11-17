@@ -1,0 +1,92 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const {environment}=require('./dom.cjs');
+const {files,withoutComments}=require('./source-audit.cjs');
+const root=path.resolve(__dirname,'../dist');
+const pages=['index.html','linha-de-frente/index.html','balcao-digital/index.html','privacidade/index.html'];
+const read=f=>fs.readFileSync(path.join(root,f),'utf8');
+const declarations=Object.fromEntries([...read('css/variables.css').match(/:root\s*\{([\s\S]*?)\n\}/)[1].matchAll(/(--[\w-]+):\s*([^;]+);/g)].map(m=>[m[1],m[2].trim()]));
+function resolve(value,depth=0){if(depth>12)throw Error('Token cycle');return value.replace(/var\((--[\w-]+)\)/g,(_,name)=>resolve(declarations[name]||'',depth+1));}
+const darkVariables=Object.fromEntries(Object.entries(declarations).map(([name,value])=>[name,resolve(value)]));
+function setup(options={},page='index.html',engine=false){
+ const env=environment(read(page),{cssVariables:darkVariables,...options});
+ env.run(env.document.querySelector('#nx-theme-init').textContent);
+ for(const name of ['theme','whatsapp','consent','track','content','experience',...(engine?['interactions']:[])])env.run(read('js/'+name+'.js'));
+ return env;
+}
+
+test('V10: all component CSS colors depend on tokens; literal colors live only in variables.css',()=>{
+ for(const file of files(path.join(root,'css')).filter(file=>!file.endsWith('variables.css'))){
+  const css=withoutComments(fs.readFileSync(file,'utf8'),'.css').replace(/url\(["']?data:image\/svg\+xml[^)]*\)/g,'');
+  assert.doesNotMatch(css,/#[\da-f]{3,8}\b/i,path.basename(file));
+  assert.doesNotMatch(css,/\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(\s*[-+.\d]/i,path.basename(file));
+  assert.doesNotMatch(css,/(?<![-\w])(?:white|black|transparent)(?![-\w])/i,path.basename(file));
+ }
+ for(const [name,rgb] of [['void','2,4,10'],['text','248,250,252'],['cyan','32,214,231'],['blue','47,123,255'],['violet','139,92,246']])assert.equal(darkVariables['--nx-'+name+'-rgb'],rgb);
+ assert.equal(darkVariables['--nx-theme-color'],'#02040A');
+ assert.match(read('css/variables.css'),/prefers-color-scheme:light/);assert.match(read('css/variables.css'),/:root:not\(\[data-theme="dark"\]\)/);assert.match(read('css/variables.css'),/V10: aguardando paleta/);
+});
+
+test('V10: head restores only valid theme preferences before CSS; absent/blocked storage follows system',()=>{
+ for(const page of pages){
+  const html=read(page);
+  assert.ok(html.indexOf('id="nx-theme-init"')<html.indexOf('rel="stylesheet"'));
+  for(const themeStorage of ['light','dark',null,'system','invalid']){
+   const env=environment(html,{themeStorage});env.run(env.document.querySelector('#nx-theme-init').textContent);
+   assert.equal(env.document.documentElement.getAttribute('data-theme'),['light','dark'].includes(themeStorage)?themeStorage:null);
+  }
+  const env=environment(html,{themeStorage:'light',storageReadError:true});env.run(env.document.querySelector('#nx-theme-init').textContent);assert.equal(env.document.documentElement.getAttribute('data-theme'),null);
+  const doc=env.document;assert.equal(doc.querySelector('meta[name="color-scheme"]').getAttribute('content'),'dark light');
+  assert.equal(doc.querySelectorAll('meta[name="theme-color"][media]').length,2);
+ }
+});
+
+test('V10: keyboard cycle persists system/light/dark, announces state and never reloads',()=>{
+ for(const page of pages){
+  const env=setup({},page),doc=env.document,button=doc.querySelector('[data-theme-toggle]');
+  assert.equal(doc.querySelectorAll('[data-theme-toggle]').length,1);assert.equal(env.window.NEXUS.theme.get().preference,'system');
+  assert.equal(doc.querySelector('[data-theme-status]').textContent,'');button.focus();
+  for(const preference of ['light','dark','system']){
+   button.pressKey('Enter');assert.equal(env.window.NEXUS.theme.get().preference,preference);
+   assert.equal(doc.documentElement.getAttribute('data-theme'),preference==='system'?null:preference);
+   assert.equal(env.storageEntries.get('nexus-theme'),preference==='system'?undefined:preference);
+   assert.equal(doc.activeElement,button);assert.match(button.getAttribute('aria-label'),/Tema atual:.*Próxima opção:/);
+   assert.ok(doc.querySelector('[data-theme-status]').textContent.startsWith('Tema:'));
+   assert.equal(button.querySelectorAll('[data-theme-icon]').filter(icon=>!icon.hidden).length,1);
+  }
+  assert.equal(env.reloads,0);assert.equal(env.window.dataLayer,undefined);assert.equal(env.window.fbq,undefined);
+ }
+});
+
+test('V10: system changes, cross-tab changes and denied storage keep theme usable without reload',()=>{
+ for(const light of [true,false]){
+  const auto=setup({light});assert.equal(auto.window.NEXUS.theme.get().effective,light?'light':'dark');assert.equal(auto.document.documentElement.getAttribute('data-theme'),null);
+  const explicit=setup({light,themeStorage:light?'dark':'light'});assert.equal(explicit.window.NEXUS.theme.get().effective,light?'dark':'light');
+ }
+ const env=setup(),api=env.window.NEXUS.theme,root=env.document.documentElement;
+ env.setMedia('(prefers-color-scheme: light)',true);assert.equal(api.get().effective,'light');assert.equal(root.getAttribute('data-theme'),null);
+ api.set('dark');env.setMedia('(prefers-color-scheme: light)',false);env.setMedia('(prefers-color-scheme: light)',true);assert.equal(api.get().effective,'dark');
+ env.event('storage',{key:'nexus-theme',newValue:'light'});assert.equal(api.get().preference,'light');
+ env.event('storage',{key:'nexus-theme',newValue:null});assert.equal(api.get().preference,'system');assert.equal(root.getAttribute('data-theme'),null);
+ assert.equal(api.set('invalid'),false);assert.equal(env.reloads,0);
+ for(const options of [{storageReadError:true},{storageWriteError:true},{storageRemoveError:true},{reduced:true},{noCanvas:true}]){
+  const blocked=setup(options);for(const mode of ['light','dark','system'])assert.equal(blocked.window.NEXUS.theme.set(mode),true);assert.equal(blocked.reloads,0);
+ }
+});
+
+test('V10: Canvas caches CSS colors between frames and rebuilds on theme or system changes',()=>{
+ for(const width of [360,1440]){
+  const env=setup({width},'index.html',true),debug=env.window.NEXUS_DEBUG;env.flush(160);
+  assert.equal(JSON.stringify(debug.palette.tones),JSON.stringify([[32,214,231],[47,123,255],[139,92,246]]));
+  const reads=env.styleReads,version=debug.palette.version,canvasWidth=env.document.querySelector('canvas').width;
+  env.flush(50);assert.equal(env.styleReads,reads,'No root style read in animation frames');
+  env.cssVariables['--nx-canvas-node']='1,2,3';env.cssVariables['--nx-canvas-link']='4,5,6';env.cssVariables['--nx-canvas-accent']='7,8,9';
+  env.captureCanvas=true;env.window.NEXUS.theme.set('light');env.flush(160);
+  assert.equal(debug.palette.version,version+1);assert.equal(debug.palette.tones[0].join(','),'1,2,3');assert.ok(env.canvasPaints.some(p=>p.value==='rgb(1,2,3)'));
+  assert.equal(env.document.querySelector('canvas').width,canvasWidth);assert.equal(debug.idle,true);assert.equal(env.reloads,0);
+  const changed=debug.palette.version;env.cssVariables['--nx-canvas-node']='10,11,12';env.setMedia('(prefers-color-scheme: light)',true);env.flush(160);assert.equal(debug.palette.version,changed+1);
+  const finalReads=env.styleReads;env.flush(50);assert.equal(env.styleReads,finalReads);assert.ok([...debug.X,...debug.Y].every(Number.isFinite));
+ }
+});

@@ -398,13 +398,8 @@
   /* ═════════════════════ Campo narrativo ═════════════════════ */
 
   const GLYPHS = ['01', '10', '{}', '[]', '<>', '/', '+', '::', 'LEAD', 'SIGNAL', '•', '—', 'reply.pending', 'next_step', 'crm.updated', 'followup'];
-  const TONES = [[32, 214, 231], [47, 123, 255], [139, 92, 246]];
-  const PAL = Array.from({ length: 65 }, (_, i) => { // ciano → azul → violeta
-    const t = i / 64, a = TONES[0], b = TONES[1], c = TONES[2];
-    return t < 0.5
-      ? [mix(a[0], b[0], t * 2), mix(a[1], b[1], t * 2), mix(a[2], b[2], t * 2)]
-      : [mix(b[0], c[0], (t - 0.5) * 2), mix(b[1], c[1], (t - 0.5) * 2), mix(b[2], c[2], (t - 0.5) * 2)];
-  });
+  let TONES=[], PAL=[], spr=[], ECOL=[], TONE_RGB=[], FIELD={};
+  let paletteSignature='', paletteVersion=0, paletteReads=0;
   const pal = t => PAL[(clamp(t) * 64) | 0];
 
   function mulberry32(a) {
@@ -1300,20 +1295,6 @@
 
   /* ─── Desenho ─── */
 
-  const spr = TONES.map(c => {
-    const s = document.createElement('canvas'); s.width = s.height = 48;
-    const g = s.getContext('2d'), gr = g.createRadialGradient(24, 24, 0, 24, 24, 24);
-    gr.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},.55)`); gr.addColorStop(0.35, `rgba(${c[0]},${c[1]},${c[2]},.16)`); gr.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
-    g.fillStyle = gr; g.fillRect(0, 0, 48, 48);
-    return s;
-  });
-
-  // Cores de aresta pré-computadas: [posição na paleta 0..16][calor 0..4] → "rgb(...)"; a opacidade vai por globalAlpha.
-  const ECOL = Array.from({ length: 17 }, (_, pi) => Array.from({ length: 5 }, (_, hi) => {
-    const c = PAL[pi * 4], e = hi / 4;
-    return `rgb(${(mix(47, c[0], e)) | 0},${(mix(123, c[1], e)) | 0},${(mix(255, c[2], e)) | 0})`;
-  }));
-
   function drawEdges(F, wFn) {
     ctx.lineCap = 'round';
     let lw = -1, col = '';
@@ -1377,10 +1358,10 @@
     if (head <= 0.5) return;
     pointAt(tail, np, tail_); pointAt(head, np, head_);
     const grad = ctx.createLinearGradient(tail_.x, tail_.y, head_.x, head_.y);
-    grad.addColorStop(0, 'rgba(139,92,246,0)');
-    grad.addColorStop(0.35, `rgba(139,92,246,${(0.5 * a).toFixed(3)})`);
-    grad.addColorStop(0.7, `rgba(47,123,255,${(0.8 * a).toFixed(3)})`);
-    grad.addColorStop(1, `rgba(125,246,255,${(0.95 * a).toFixed(3)})`);
+    grad.addColorStop(0, `rgba(${FIELD.accent},0)`);
+    grad.addColorStop(0.35, `rgba(${FIELD.accent},${(0.5 * a).toFixed(3)})`);
+    grad.addColorStop(0.7, `rgba(${FIELD.link},${(0.8 * a).toFixed(3)})`);
+    grad.addColorStop(1, `rgba(${FIELD.tracer},${(0.95 * a).toFixed(3)})`);
     ctx.strokeStyle = grad; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     for (let pass = quality === 0 ? 1 : 0; pass < 2; pass++) {   // o halo largo é dispensável na qualidade leve
       ctx.globalAlpha = pass ? 1 : 0.22; ctx.lineWidth = (pass ? 1.7 : 6) * t.w;
@@ -1394,7 +1375,7 @@
       ctx.lineTo(head_.x, head_.y); ctx.stroke();
     }
     ctx.globalAlpha = 1;
-    ctx.fillStyle = `rgba(230,252,255,${(0.9 * a).toFixed(3)})`;
+    ctx.fillStyle = `rgba(${FIELD.highlight},${(0.9 * a).toFixed(3)})`;
     ctx.beginPath(); ctx.arc(head_.x, head_.y, 2.4, 0, TAU); ctx.fill();
   }
 
@@ -1402,19 +1383,49 @@
     for (let i = 0; i < F.nr; i++) {
       const r = F.rg[i], a = r.a * wgt;
       if (a < 0.006) continue;
-      ctx.strokeStyle = `rgba(125,211,252,${a.toFixed(3)})`; ctx.lineWidth = 0.8;
+      ctx.strokeStyle = `rgba(${FIELD.ring},${a.toFixed(3)})`; ctx.lineWidth = 0.8;
       ctx.beginPath(); ctx.ellipse(r.x, r.y, Math.max(1, r.rx), Math.max(1, r.ry), r.rot, 0, TAU); ctx.stroke();
     }
     if (F.halo && F.halo.a * wgt > 0.004) {
       const h = F.halo, gr = ctx.createRadialGradient(h.x, h.y, 0, h.x, h.y, h.r);
-      gr.addColorStop(0, `rgba(32,214,231,${(h.a * wgt).toFixed(3)})`);
-      gr.addColorStop(0.5, `rgba(47,123,255,${(h.a * wgt * 0.45).toFixed(3)})`);
-      gr.addColorStop(1, 'rgba(47,123,255,0)');
+      gr.addColorStop(0, `rgba(${FIELD.node},${(h.a * wgt).toFixed(3)})`);
+      gr.addColorStop(0.5, `rgba(${FIELD.link},${(h.a * wgt * 0.45).toFixed(3)})`);
+      gr.addColorStop(1, `rgba(${FIELD.link},0)`);
       ctx.fillStyle = gr; ctx.fillRect(h.x - h.r, h.y - h.r, h.r * 2, h.r * 2);
     }
   }
 
-  const TONE_RGB = TONES.map(t => `rgb(${t[0]},${t[1]},${t[2]})`);
+
+  // Only initialization and theme notifications read computed CSS. Geometry is untouched.
+  function refreshPalette() {
+    const style=getComputedStyle(root);paletteReads++;
+    const colors={};
+    for(const name of ['node','link','accent','tracer','highlight','ring']){
+      const value=style.getPropertyValue('--nx-canvas-'+name).trim().split(/[,\s]+/).filter(Boolean).map(Number);
+      colors[name]=value.length===3&&value.every(Number.isFinite)?value.map(v=>clamp(v,0,255)):[0,0,0];
+    }
+    const signature=Object.values(colors).map(c=>c.join(',')).join('|');
+    if(signature===paletteSignature)return;
+    paletteSignature=signature;paletteVersion++;FIELD=colors;
+    TONES=[colors.node,colors.link,colors.accent];
+    PAL=Array.from({length:65},(_,i)=>{
+      const t=i/64,a=TONES[0],b=TONES[1],c=TONES[2];
+      return t<.5?a.map((v,j)=>mix(v,b[j],t*2)):b.map((v,j)=>mix(v,c[j],(t-.5)*2));
+    });
+    spr=TONES.map(c=>{
+      const surface=document.createElement('canvas');surface.width=surface.height=48;
+      const g=surface.getContext('2d'),gradient=g.createRadialGradient(24,24,0,24,24,24);
+      gradient.addColorStop(0,`rgba(${c},.55)`);gradient.addColorStop(.35,`rgba(${c},.16)`);gradient.addColorStop(1,`rgba(${c},0)`);
+      g.fillStyle=gradient;g.fillRect(0,0,48,48);return surface;
+    });
+    ECOL=Array.from({length:17},(_,pi)=>Array.from({length:5},(_,hi)=>{
+      const c=PAL[pi*4],e=hi/4;
+      return `rgb(${mix(colors.link[0],c[0],e)|0},${mix(colors.link[1],c[1],e)|0},${mix(colors.link[2],c[2],e)|0})`;
+    }));
+    TONE_RGB=TONES.map(c=>`rgb(${c})`);
+    havePrev=false;kick();
+  }
+
   const FONT = {};
   const fontOf = px => FONT[px] || (FONT[px] = `${px}px ui-monospace,SFMono-Regular,Menlo,monospace`);
   const NA = new Float32Array(MAXN), NL = new Float32Array(MAXN);   // opacidade do glifo e “lente” por nó
@@ -1524,7 +1535,7 @@
       signalPath[j*2] = x; signalPath[j*2+1] = y;
       if (j === 0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
     }
-    ctx.lineWidth = .8; ctx.strokeStyle = 'rgb(47,123,255)';
+    ctx.lineWidth = .8; ctx.strokeStyle = `rgb(${FIELD.link})`;
     ctx.globalAlpha = strength; ctx.stroke();
     // Spatial phase is derived solely from scroll, including reverse movement.
     const phase = (sy / Math.max(1, VH * 1.35) + .76) % 1;
@@ -1821,11 +1832,14 @@
 
   /* ═════════════════════ Início ═════════════════════ */
 
+  refreshPalette();
+  addEventListener('nx:theme',refreshPalette);
+  matchMedia('(prefers-color-scheme: light)').addEventListener('change',refreshPalette);
   resizeCanvas();
   measure();
   ty = sy = prevSy = scrollY;
   for (let i = 0; i < N; i++) lag[i] = sy;
   kick();
 
-  if (DEBUG) window.NEXUS_DEBUG = { magnets, SIG, X, Y, PROX, ptr, scenes, get quality() { return quality; }, get dpr() { return dpr; }, get story() { return { si, st, sy }; }, get nodes() { return N; }, get cost() { return drawCost; }, get frameCost() { return frameCost; }, get draws() { return draws; }, get frames() { return frameNo; }, get buffered() { return surface!==canvas; }, get presents() { return presents; }, get idle() { return !raf; } };
+  if (DEBUG) window.NEXUS_DEBUG = { get palette() { return {version:paletteVersion,reads:paletteReads,tones:TONES.map(c=>c.slice())}; }, magnets, SIG, X, Y, PROX, ptr, scenes, get quality() { return quality; }, get dpr() { return dpr; }, get story() { return { si, st, sy }; }, get nodes() { return N; }, get cost() { return drawCost; }, get frameCost() { return frameCost; }, get draws() { return draws; }, get frames() { return frameNo; }, get buffered() { return surface!==canvas; }, get presents() { return presents; }, get idle() { return !raf; } };
 })();
