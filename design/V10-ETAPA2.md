@@ -13,3 +13,7 @@ Botão circular visual de 40 px, área de 44 px no mobile, antes do WhatsApp em 
 ## Grupo 3 — campo claro
 
 TONES claros 14/116/144, 37/99/235 e 109/64/224. Alfas de sprite .30/.10, arestas ×.70, cometa .45/.70/.85, núcleo .80, halo .60/.30 e glifos limitados a .30. Todos são tokens lidos fora do frame e fazem parte da assinatura do cache; sprites e tabelas reconstruídos no `nx:themechange`. O evento antigo continua aceito por compatibilidade. Geometria, buffer, trajetória e reduced-motion preservados; testes alternam em quatro páginas e duas larguras e verificam cores de desenho, cache e retorno ao idle.
+
+## Grupo 4 — superfícies, versos, gradientes e CTAs
+
+Janelas brancas com barra fria e sombras próprias; chat com superfícies de cliente/atendente separadas. Frentes e versos claros, com gradiente do produto no contorno, incluindo dores LF/BD identificadas por data-product. Véus claros difusos protegem parágrafos e etapas. CTA de marca conserva ciano/azul brilhante e tinta #02040A; BD claro usa #3B82F6 / #7C5CF0, sem texto branco. Gradiente dos nomes usa a variante de texto profunda do produto; espectro gráfico fica em contornos/linhas. A máscara do texto mantém a tinta do tema para não tornar letras claras sobre papel, preservando contraste durante a animação. Header e menu herdam superfícies e tinta corretas. Nenhuma cor literal nova fora de variables.css.
