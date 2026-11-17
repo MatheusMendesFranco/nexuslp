@@ -17,3 +17,7 @@ TONES claros 14/116/144, 37/99/235 e 109/64/224. Alfas de sprite .30/.10, aresta
 ## Grupo 4 — superfícies, versos, gradientes e CTAs
 
 Janelas brancas com barra fria e sombras próprias; chat com superfícies de cliente/atendente separadas. Frentes e versos claros, com gradiente do produto no contorno, incluindo dores LF/BD identificadas por data-product. Véus claros difusos protegem parágrafos e etapas. CTA de marca conserva ciano/azul brilhante e tinta #02040A; BD claro usa #3B82F6 / #7C5CF0, sem texto branco. Gradiente dos nomes usa a variante de texto profunda do produto; espectro gráfico fica em contornos/linhas. A máscara do texto mantém a tinta do tema para não tornar letras claras sobre papel, preservando contraste durante a animação. Header e menu herdam superfícies e tinta corretas. Nenhuma cor literal nova fora de variables.css.
+
+## Grupo 5 — leitura, foco, cookies e eventos
+
+Rótulos/assuntos/contagens usam tinta do produto, não ciano gráfico; links e hover usam azul legível. Seleção com tinta noturna no claro. Foco opaco e bordas de controles reforçadas; fallback forced-colors preserva texto de gradientes. Cookies mantêm Aceitar/Rejeitar equivalentes, Configurar discreto, tabela clara, checkbox com acento de foco e toast escuro legível. Privacidade herda tinta, links e superfícies. `theme_toggle` segue a camada existente de consentimento: só ação deliberada do botão/reset, sem dado pessoal; sistema/entre abas não emitem interação. Teste cobre medição separada de marketing.

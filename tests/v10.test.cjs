@@ -124,3 +124,14 @@ test('V10.2: light Canvas applies deep tones and reduced alpha on all pages with
   env.window.NEXUS.theme.set('dark');env.flush(160);assert.equal(debug.palette.alpha['sprite-core'],.55);assert.equal(debug.palette.tones[0].join(','),'32,214,231');
  }
 });
+
+test('V10.2: only deliberate theme actions emit theme_toggle after the appropriate consent',()=>{
+ const env=setup(),doc=env.document,button=doc.querySelector('[data-theme-toggle]');
+ button.click();assert.equal(env.window.dataLayer,undefined);assert.equal(env.window.fbq,undefined);
+ doc.querySelector('[data-consent="configure"]').click();doc.querySelector('#consent-measurement').checked=true;doc.querySelector('[data-consent="save"]').click();
+ button.click();const layer=env.window.dataLayer,events=()=>layer.filter(e=>e.event==='theme_toggle');
+ assert.equal(events().length,1);assert.equal(events()[0].action,'dark');assert.equal(events()[0].origin,'header');assert.equal(env.window.fbq,undefined);
+ doc.querySelector('[data-theme-system]').click();assert.equal(events().length,2);assert.equal(events()[1].action,'system');
+ env.setMedia('(prefers-color-scheme: light)',true);assert.equal(events().length,2,'OS changes are not interactions');
+ doc.querySelector('[data-consent="accept"]').click();button.click();assert.ok(env.window.fbq.queue.some(args=>args[0]==='trackCustom'&&args[1]==='theme_toggle'));
+});

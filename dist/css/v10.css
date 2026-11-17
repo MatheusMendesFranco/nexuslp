@@ -45,3 +45,31 @@ body[data-product] .nx-cta:not(.nx-cta--ghost) { background:var(--prod-cta-gradi
 .nx-veil::before,.nx-fact-strip p::before,.nx-detail-rail details p::before { background:var(--nx-veil-fill); box-shadow:var(--nx-veil-spread); border-radius:var(--nx-veil-radius); }
 #solucao-lf .nx-veil::before,#solucao-bd .nx-veil::before { background:var(--nx-veil-fill); }
 .nx-product-band .nx-flow-track::before { background:var(--nx-band-veil-fill); box-shadow:var(--nx-veil-spread); }
+
+/* Small text uses ink variants; graphical accents remain separate. */
+.nx-eyebrow { color:var(--nx-label-text); }
+.nx-hero .nx-eyebrow { color:var(--nx-label-hero-text); }
+.nx-card-number,.nx-demo-count,.nx-email-subject,.nx-chat-speaker,.nx-typing,.nx-example-label,.nx-consultation li span { color:var(--prod-text); }
+.nx-text-link:hover,.nx-menu a:hover,.nx-menu a:focus-visible,.nx-flip-trigger:hover .nx-flip-control { color:var(--nx-link-hover); }
+.nx-body a,.nx-legal a,.nx-faq details a,.nx-consent a { color:var(--nx-link); }
+.nx-window-badge { padding:4px 8px; border-radius:var(--radius-pill); background:color-mix(in srgb,var(--prod-a) 10%,var(--nx-surface)); color:var(--prod-text); }
+.nx-fact-cards .nx-flip-card { background:linear-gradient(var(--nx-card-front),var(--nx-card-front)) padding-box,linear-gradient(115deg,var(--prod-a),var(--prod-b)) border-box; }
+.nx-contact-rail .nx-flip-card.is-flipped .nx-flip-control { background:var(--nx-card-back); }
+/* Focus and selection use the same roles in explicit and automatic themes. */
+:focus-visible { outline:2px solid var(--nx-focus); outline-offset:2px; }
+:root .nx-cta:focus-visible,.nx-demo-output:focus-visible,.nx-chat-log:focus-visible { outline:2px solid var(--nx-focus); outline-offset:2px; }
+::selection { background:var(--nx-selection-bg); color:var(--nx-on-selection); }
+.nx-menu-btn,.nx-legal button[data-consent-open] { border-color:var(--nx-border-strong); }
+.nx-cta--ghost:hover,.nx-cta--ghost:focus-visible { box-shadow:inset 0 0 0 1px var(--nx-focus); }
+/* Consent choices retain equivalent visual weight; all content remains in the light surface. */
+.nx-cookie-banner,.nx-cookie-dialog { background:var(--nx-surface); border-color:var(--nx-border); box-shadow:var(--nx-shadow-1); }
+.nx-consent button { border-color:var(--nx-border-strong); color:var(--nx-text); }
+.nx-consent button[data-consent="configure"] { border-color:var(--nx-transparent); color:var(--nx-link); text-decoration:underline; text-underline-offset:4px; }
+.nx-cookie-table th,.nx-cookie-table td,.nx-cookie-option { border-color:var(--nx-border); }
+.nx-cookie-option input { accent-color:var(--nx-focus); }
+.nx-consent .nx-cookie-toast { background:var(--nx-toast-bg); color:var(--nx-toast-text); }
+@media(forced-colors:active) {
+ .nx-product-name,.nx-gradient-stack { background:none; color:CanvasText; -webkit-text-fill-color:CanvasText; }
+ .nx-flip-card,.nx-cta,.nx-theme-toggle { border:1px solid ButtonText; }
+ .nx-theme-toggle::before { border-color:ButtonText; }
+}
