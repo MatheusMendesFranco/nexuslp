@@ -8,9 +8,9 @@ html { scroll-behavior: smooth; }
 .nx-ambient {
   position: fixed; inset: 0; width:100%; overflow:hidden; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(ellipse at 73% 45%, rgba(32, 214, 231, .065), transparent 43%),
-    radial-gradient(ellipse at 89% 67%, rgba(139, 92, 246, .065), transparent 38%),
-    radial-gradient(ellipse at 26% 13%, rgba(47, 123, 255, .035), transparent 55%);
+    radial-gradient(ellipse at 73% 45%, rgba(var(--nx-cyan-rgb),.065), var(--nx-transparent) 43%),
+    radial-gradient(ellipse at 89% 67%, rgba(var(--nx-violet-rgb),.065), var(--nx-transparent) 38%),
+    radial-gradient(ellipse at 26% 13%, rgba(var(--nx-blue-rgb),.035), var(--nx-transparent) 55%);
 }
 
 /* Altura estável (lvh): a barra de endereço do celular não redimensiona nem realoca o canvas durante a rolagem.
@@ -55,7 +55,7 @@ main { position: relative; z-index: 2; }
   margin-bottom: clamp(22px, 3vw, 36px);
   font-size: var(--text-caption); font-weight: 600; line-height: 1.5;
   letter-spacing: .12em; text-transform: uppercase;
-  color: color-mix(in srgb, var(--nx-cyan) 78%, white);
+  color: color-mix(in srgb, var(--nx-cyan) 78%, var(--nx-white));
 }
 /* Traço-sinal: também é o que mantém a página intencional com o canvas desligado. */
 .nx-eyebrow::before {
@@ -137,7 +137,7 @@ main { position: relative; z-index: 2; }
   display: inline-flex; align-items: center; gap: 10px;
   padding: 16px 24px; margin-top: clamp(28px, 3.4vw, 44px);
   border: 0; border-radius: var(--radius-pill);
-  color: var(--nx-void); text-decoration: none;
+  color:var(--nx-on-cta); text-decoration: none;
   font-size: 14px; font-weight: 600; letter-spacing: .025em; line-height: 1.2; white-space: nowrap;
   background: var(--nx-gradient-signal);
   background-size: 190% 100%;
@@ -145,24 +145,24 @@ main { position: relative; z-index: 2; }
   transform: translate3d(var(--tx), var(--ty), 0);
   transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, .06),
-    0 10px 34px rgba(47, 123, 255, calc(.10 + var(--cta-glow) * .08 + var(--cta-near, 0) * .08));
+    0 0 0 1px rgba(var(--nx-white-rgb),.06),
+    0 10px 34px rgba(var(--nx-blue-rgb),calc(.10 + var(--cta-glow) * .08 + var(--cta-near, 0) * .08));
 }
 .nx-cta svg { flex: none; transition: transform var(--dur-fast) var(--ease-out); }
 .nx-cta:hover, .nx-cta:focus-visible {
-  box-shadow: 0 0 0 1px rgba(125, 211, 252, .22), 0 12px 38px rgba(47, 123, 255, .20);
+  box-shadow: 0 0 0 1px rgba(var(--nx-ice-rgb),.22), 0 12px 38px rgba(var(--nx-blue-rgb),.20);
 }
 .nx-cta:hover svg, .nx-cta:focus-visible svg { transform: translateX(3px); }
-.nx-cta:focus-visible { outline: 3px solid rgba(32, 214, 231, .7); outline-offset: 4px; border-radius: var(--radius-pill); }
+.nx-cta:focus-visible { outline: 3px solid rgba(var(--nx-cyan-rgb),.7); outline-offset: 4px; border-radius: var(--radius-pill); }
 
 /* No header o CTA é secundário (contorno): só existe UM CTA preenchido por viewport. */
 .nx-cta--ghost {
   margin: 0; padding: 10px 18px; min-height: 44px; justify-content: center; color: var(--nx-text);
-  background: transparent; box-shadow: inset 0 0 0 1px rgba(168, 179, 199, .30);
+  background: var(--nx-transparent); box-shadow: inset 0 0 0 1px rgba(var(--nx-border-rgb),.30);
 }
 .nx-cta--ghost:hover, .nx-cta--ghost:focus-visible {
-  background: rgba(32, 214, 231, .07);
-  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, .62);
+  background: rgba(var(--nx-cyan-rgb),.07);
+  box-shadow: inset 0 0 0 1px rgba(var(--nx-ice-rgb),.62);
 }
 
 /* ───────── Processo: quatro verbos, um palco ───────── */
@@ -180,7 +180,7 @@ main { position: relative; z-index: 2; }
 }
 .nx-continue::before {
   content: ''; width: clamp(40px, 7vw, 100px); height: 1px;
-  background: linear-gradient(90deg, var(--nx-cyan), rgba(47,123,255,.2));
+  background: linear-gradient(90deg, var(--nx-cyan), rgba(var(--nx-blue-rgb),.2));
   transform-origin: left;
   transition: transform var(--dur-base) var(--ease-out);
 }
@@ -233,7 +233,7 @@ html:not(.nx-live) .nx-continue { position: relative; inset: auto; margin-top: 3
     animation-iteration-count: 1 !important;
     transition-duration: .001ms !important;
   }
-  .nx-ambient { background: radial-gradient(1100px circle at 88% 6%, rgba(47, 123, 255, .06), transparent 62%), var(--nx-void); }
+  .nx-ambient { background: radial-gradient(1100px circle at 88% 6%, rgba(var(--nx-blue-rgb),.06), var(--nx-transparent) 62%), var(--nx-void); }
   #narrative-canvas { display: none; }
 
   .nx-section, .nx-section--tall,
@@ -286,7 +286,7 @@ html:not(.nx-live) .nx-continue { position: relative; inset: auto; margin-top: 3
 .nx-flow-track li {
   --step-active: 0; position: relative; flex: 1 1 108px;
   font-size: 14px; line-height: 1.4; color: var(--nx-muted);
-  border-top: 1px solid rgba(168,179,199,.25); padding-top: 18px;
+  border-top: 1px solid rgba(var(--nx-border-rgb),.25); padding-top: 18px;
 }
 .nx-flow-track li::before {
   content: ''; position: absolute; top: -3px; left: 0; width: 5px; height: 5px;
@@ -349,15 +349,15 @@ html:not(.nx-live) .nx-continue { position: relative; inset: auto; margin-top: 3
     background-image:
       linear-gradient(90deg,
         var(--nx-text) calc(var(--gb) - 14%),
-        rgba(248,250,252,calc(1 - var(--ga))) var(--gb),
-        rgba(248,250,252,calc(1 - var(--ga))) var(--gf),
+        rgba(var(--nx-text-rgb),calc(1 - var(--ga))) var(--gb),
+        rgba(var(--nx-text-rgb),calc(1 - var(--ga))) var(--gf),
         var(--nx-text) calc(var(--gf) + 14%)),
       var(--g-img, var(--nx-gradient-message));
     background-size: 100% 100%, 150% 100%;
     background-position: 0 0, calc(var(--gx) + var(--hx)) 50%;
     background-repeat: no-repeat;
     -webkit-background-clip: text; background-clip: text;
-    color: transparent; -webkit-text-fill-color: transparent;
+    color: var(--nx-transparent); -webkit-text-fill-color: var(--nx-transparent);
   }
   .nx-gradient-base { color: inherit; -webkit-text-fill-color: inherit; }
   @media (hover: hover) and (pointer: fine) {

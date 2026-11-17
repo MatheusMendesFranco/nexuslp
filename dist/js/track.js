@@ -1,7 +1,7 @@
 /* Small consent-aware event layer. A click is never reported as a Lead. */
 (() => {
   'use strict';
-  const allowed = new Set(['product_view', 'demo_interaction', 'pain_select', 'cta_click', 'whatsapp_exit']);
+  const allowed = new Set(['product_view', 'demo_interaction', 'pain_select', 'cta_click', 'whatsapp_exit', 'theme_toggle']);
   function track(event, values = {}) {
     if (!allowed.has(event)) return false;
     const consent = window.NEXUS.consent.get();

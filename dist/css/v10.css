@@ -1,0 +1,106 @@
+/* V10: gradient ink needs room below the baseline, independently of font size. */
+.nx-product-name { line-height:1.12; padding-bottom:.12em; margin-bottom:-.12em; }
+.nx-product-tag { display:flex; margin-bottom:clamp(16px,2vw,28px); }
+.nx-hero-product .nx-product-name { margin-top:0; }
+/* Destination icon in the header; only the system reset remains in the footer. */
+.nx-theme-toggle { position:relative; display:inline-flex; align-items:center; justify-content:center; flex:none; width:40px; height:40px; min-width:40px; min-height:40px; padding:0; border:1px solid var(--nx-border); border-radius:50%; background:var(--nx-transparent); color:var(--nx-muted); cursor:pointer; }
+.nx-theme-toggle .nx-icon { width:20px; height:20px; }
+.nx-theme-toggle:hover { color:var(--nx-text); border-color:var(--nx-border-strong); }
+.nx-theme-toggle:focus-visible { outline:2px solid var(--nx-focus); outline-offset:2px; }
+html:not(.js) .nx-theme-toggle { display:none; }
+body,.nx-header,.nx-window-bar,.nx-cookie-banner,.nx-cookie-dialog,.nx-footer,.nx-theme-toggle { transition:background-color 180ms var(--ease-out),color 180ms var(--ease-out),border-color 180ms var(--ease-out); }
+@media(max-width:860px) {
+ .nx-header { gap:8px; }
+ .nx-header-actions { gap:6px; }
+ .nx-header-actions .nx-cta--ghost { padding-inline:12px; font-size:13px; letter-spacing:0; }
+ .nx-theme-toggle { width:44px; height:44px; min-width:44px; min-height:44px; border:0; }
+ .nx-theme-toggle::before { content:''; position:absolute; inset:2px; border:1px solid var(--nx-border); border-radius:50%; pointer-events:none; }
+ .nx-theme-toggle:hover::before { border-color:var(--nx-border-strong); }
+}
+@media(max-width:360px) { .nx-header { gap:6px; } .nx-header .nx-logo { font-size:14px; gap:8px; letter-spacing:.12em; } }
+@media(prefers-reduced-motion:reduce) { body,.nx-header,.nx-window-bar,.nx-cookie-banner,.nx-cookie-dialog,.nx-footer,.nx-theme-toggle { transition:none; } }
+
+/* Semantic surfaces work with explicit themes and with pure-CSS system preference. */
+:root { --prod-text-gradient:var(--nx-lf-gradient-text); --prod-cta-gradient:var(--nx-lf-cta-gradient); --prod-band-signal:var(--nx-lf-band-signal); }
+[data-product="lf"] { --prod-text-gradient:var(--nx-lf-gradient-text); --prod-cta-gradient:var(--nx-lf-cta-gradient); --prod-band-signal:var(--nx-lf-band-signal); }
+[data-product="bd"] { --prod-text-gradient:var(--nx-bd-gradient-text); --prod-cta-gradient:var(--nx-bd-cta-gradient); --prod-band-signal:var(--nx-bd-band-signal); }
+.nx-ambient { background:var(--nx-ambient); }
+.nx-header { background:var(--nx-header-bg); border-bottom:1px solid var(--nx-header-border); }
+.nx-product-name { background-image:var(--prod-text-gradient); }
+.nx-product-band .nx-product-glyph { color:var(--prod-band-signal); }
+.nx-product-band .nx-flow-track li::before { background:var(--prod-band-signal); }
+.nx-cta:not(.nx-cta--ghost) { background:var(--nx-cta-gradient); color:var(--nx-ink-on-cta); outline:1px solid var(--nx-cta-border); outline-offset:-1px; }
+body[data-product] .nx-cta:not(.nx-cta--ghost) { background:var(--prod-cta-gradient); color:var(--nx-ink-on-cta); }
+.nx-cta { box-shadow:var(--nx-cta-shadow,0 0 0 1px rgba(var(--nx-highlight-rgb),.06),0 10px 34px rgba(var(--nx-blue-rgb),calc(.10 + var(--cta-glow) * .08 + var(--cta-near,0) * .08))); }
+.nx-cta--ghost { background:var(--nx-transparent); box-shadow:inset 0 0 0 1px var(--nx-border-strong); }
+.nx-flip-card { background:radial-gradient(ellipse at var(--card-x) var(--card-y),rgba(var(--nx-cyan-rgb),.07),var(--nx-transparent) 65%) padding-box,linear-gradient(var(--nx-card-front),var(--nx-card-front)) padding-box,linear-gradient(115deg,var(--prod-a),var(--prod-b)) border-box; box-shadow:var(--nx-card-shadow); }
+.nx-flip-card--pain:nth-child(even),.nx-flip-card--desk { background:radial-gradient(ellipse at var(--card-x) var(--card-y),rgba(var(--nx-violet-rgb),.09),var(--nx-transparent) 65%) padding-box,linear-gradient(var(--nx-card-front-alt),var(--nx-card-front-alt)) padding-box,linear-gradient(115deg,var(--prod-a),var(--prod-b)) border-box; }
+.nx-flip-back { background:var(--nx-card-back); border-radius:inherit; }
+.nx-window { background:var(--nx-window-bg); border-color:var(--nx-border); box-shadow:var(--nx-shadow-window); }
+.nx-window-bar { background:var(--nx-window-bar); border-color:var(--nx-border); }
+.nx-window .nx-chat-log { background:var(--nx-chat-bg); }
+.nx-chat-bubble { background:var(--nx-bubble-agent-bg); border-left-color:var(--prod-a); color:var(--nx-text); }
+.nx-chat-bubble--client { background:var(--nx-bubble-client-bg); }
+.nx-hero-preview .nx-chat-bubble { color:var(--nx-text); }
+.nx-veil::before,.nx-fact-strip p::before,.nx-detail-rail details p::before { background:var(--nx-veil-fill); box-shadow:var(--nx-veil-spread); border-radius:var(--nx-veil-radius); }
+#solucao-lf .nx-veil::before,#solucao-bd .nx-veil::before { background:var(--nx-veil-fill); }
+.nx-product-band .nx-flow-track::before { background:var(--nx-band-veil-fill); box-shadow:var(--nx-veil-spread); }
+
+/* Small text uses ink variants; graphical accents remain separate. */
+.nx-eyebrow { color:var(--nx-label-text); }
+.nx-hero .nx-eyebrow { color:var(--nx-label-hero-text); }
+.nx-card-number,.nx-demo-count,.nx-email-subject,.nx-chat-speaker,.nx-typing,.nx-example-label,.nx-consultation li span { color:var(--prod-text); }
+.nx-text-link:hover,.nx-menu a:hover,.nx-menu a:focus-visible,.nx-flip-trigger:hover .nx-flip-control { color:var(--nx-link-hover); }
+.nx-body a,.nx-legal a,.nx-faq details a,.nx-consent a { color:var(--nx-link); }
+.nx-window-badge { padding:4px 8px; border-radius:var(--radius-pill); background:color-mix(in srgb,var(--prod-a) 10%,var(--nx-surface)); color:var(--prod-text); }
+.nx-fact-cards .nx-flip-card { background:linear-gradient(var(--nx-card-front),var(--nx-card-front)) padding-box,linear-gradient(115deg,var(--prod-a),var(--prod-b)) border-box; }
+.nx-contact-rail .nx-flip-card.is-flipped .nx-flip-control { background:var(--nx-card-back); }
+/* Focus and selection use the same roles in explicit and automatic themes. */
+:focus-visible { outline:2px solid var(--nx-focus); outline-offset:2px; }
+:root .nx-cta:focus-visible,.nx-demo-output:focus-visible,.nx-chat-log:focus-visible { outline:2px solid var(--nx-focus); outline-offset:2px; }
+::selection { background:var(--nx-selection-bg); color:var(--nx-on-selection); }
+.nx-menu-btn,.nx-legal button[data-consent-open] { border-color:var(--nx-border-strong); }
+.nx-cta--ghost:hover,.nx-cta--ghost:focus-visible { box-shadow:inset 0 0 0 1px var(--nx-focus); }
+/* Consent choices retain equivalent visual weight; all content remains in the light surface. */
+.nx-cookie-banner,.nx-cookie-dialog { background:var(--nx-surface); border-color:var(--nx-border); box-shadow:var(--nx-shadow-1); }
+.nx-consent button { border-color:var(--nx-border-strong); color:var(--nx-text); }
+.nx-consent button[data-consent="configure"] { border-color:var(--nx-transparent); color:var(--nx-link); text-decoration:underline; text-underline-offset:4px; }
+.nx-cookie-table th,.nx-cookie-table td,.nx-cookie-option { border-color:var(--nx-border); }
+.nx-cookie-option input { accent-color:var(--nx-focus); }
+.nx-consent .nx-cookie-toast { background:var(--nx-toast-bg); color:var(--nx-toast-text); }
+/* The brand remains chromatic, with theme tokens instead of neon-only SVG stops. */
+.nx-logo svg stop:first-child { stop-color:var(--nx-cyan); }
+.nx-logo svg stop:nth-child(2) { stop-color:var(--nx-blue); }
+.nx-logo svg stop:last-child { stop-color:var(--nx-violet); }
+.nx-logo svg circle { fill:var(--nx-blue); }
+.nx-logo svg circle:first-of-type { fill:var(--nx-cyan); }
+.nx-logo svg circle:last-of-type { fill:var(--nx-violet); }
+@media(forced-colors:active) {
+ .nx-product-name,.nx-gradient-stack { background:none; color:CanvasText; -webkit-text-fill-color:CanvasText; }
+ .nx-flip-card,.nx-cta,.nx-theme-toggle { border:1px solid ButtonText; }
+ .nx-theme-toggle::before { border-color:ButtonText; }
+}
+/* Diretor: no tema claro o header usa o mesmo véu de largura total do escuro, sem caixa recortada. */
+.nx-header { background:none; border-bottom:0; }
+/* Diretor (revisão V10, M-1): no tema claro, a área fora da faixa de gradiente não pode deixar o fundo claro
+   aparecer através do texto semitransparente; uma camada sólida de tinta fica por baixo. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  :root[data-theme="light"] .nx-gradient-stack {
+    background-image:
+      linear-gradient(90deg, var(--nx-text) calc(var(--gb) - 14%), rgba(var(--nx-text-rgb),calc(1 - var(--ga))) var(--gb), rgba(var(--nx-text-rgb),calc(1 - var(--ga))) var(--gf), var(--nx-text) calc(var(--gf) + 14%)),
+      var(--g-img, var(--nx-gradient-message)),
+      linear-gradient(var(--nx-text), var(--nx-text));
+    background-size: 100% 100%, 150% 100%, 100% 100%;
+    background-position: 0 0, calc(var(--gx) + var(--hx)) 50%, 0 0;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .nx-gradient-stack {
+      background-image:
+        linear-gradient(90deg, var(--nx-text) calc(var(--gb) - 14%), rgba(var(--nx-text-rgb),calc(1 - var(--ga))) var(--gb), rgba(var(--nx-text-rgb),calc(1 - var(--ga))) var(--gf), var(--nx-text) calc(var(--gf) + 14%)),
+        var(--g-img, var(--nx-gradient-message)),
+        linear-gradient(var(--nx-text), var(--nx-text));
+      background-size: 100% 100%, 150% 100%, 100% 100%;
+      background-position: 0 0, calc(var(--gx) + var(--hx)) 50%, 0 0;
+    }
+  }
+}
